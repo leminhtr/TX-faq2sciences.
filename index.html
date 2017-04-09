@@ -1,0 +1,96 @@
+<html>
+
+<head>
+
+    <title> TX</title>
+
+    <!-- Load c3.css -->
+    <link href="./C3js/c3.css" rel="stylesheet" type="text/css">
+
+    <!--&lt;!&ndash; Load d3.js and c3.js &ndash;&gt;-->
+    <script src="./C3js/d3.v3.min.js" charset="utf-8"></script>
+    <script src="./C3js/c3.js"></script>
+
+    <!-- Load plotly js -->
+    <script src="plotly-latest.min.js"></script>
+
+
+    <script src="id_auth.js"></script>
+
+
+</head>
+<body>
+
+<p id="paragraph"></p>
+
+
+<div id="bar_avg_user"></div>
+
+
+<script src="es_query.js"></script>
+
+<!--appel ES && récupère data-->
+<script>
+
+    vXhr.send(JSON.stringify(query_UL_phy_avg));
+
+    var tmp=[];
+    var src;
+    var result,data;
+    var agreg_avg_user, user_id=[], avg_score=[];
+
+    vXhr.onreadystatechange = function () {
+
+        if (vXhr.readyState == 4 && (vXhr.status == 200)) {// Si pas d'erreur -> traitement
+
+            console.log("ready");
+            result = JSON.parse(vXhr.responseText);    // response
+            // console.log(res);
+
+            data= result.hits.hits;   //res.hits
+
+            agreg_avg_user=result.aggregations.avg_user.buckets; //=array de [{doc_count:..., key:..., score_avg:{value:...}}, {}, ... ]
+
+            //document.getElementById("paragraph").textContent =JSON.stringify(data);   //affiche <p></p> tableau : data=[{index:"", _type:"",...}]
+
+            // Extrait score_scaled de result
+            for (var i in data) // Un élément du tableau : data[i]={index:..., _type:...,...,_source: object}
+            {
+                //console.log(data[i]);//
+                src = data[i]._source; //src= object : {type:..., score_scaled:,... user:...}
+                //console.log(src);
+                tmp.push(src.score_scaled);
+            }
+
+            // Extrait avg_score et user_id de result
+            for(var i in agreg_avg_user)
+            {
+                //console.log(agreg_avg_user)
+                user_id.push(agreg_avg_user[i].key);
+                avg_score.push(agreg_avg_user[i].score_avg.value);
+            }
+        } else {
+            console.log("not ready yet")
+        }
+    }
+
+</script>
+
+<!--make the plot-->
+<script type="text/javascript", src="plot_bar_avg_user.js"> </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

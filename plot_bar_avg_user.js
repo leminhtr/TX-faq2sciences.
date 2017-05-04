@@ -27,7 +27,8 @@ Example :
 user_id.unshift('User_id'); // enfile le label
 avg_score.unshift('Average score'); // enfile le label
 
-var bar_avg_user = c3.generate({
+//var bar_avg_user = 
+c3.generate({
     bindto: '#bar_avg_user',
     data: {
         columns: [

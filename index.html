@@ -15,7 +15,7 @@
     <script src="plotly-latest.min.js"></script>
 
 
-    <script src="id_auth.js"></script>
+    
 
 
 </head>
@@ -32,52 +32,114 @@
 <!--appel ES && récupère data-->
 <script>
 
-    vXhr.send(JSON.stringify(query_UL_phy_avg));
+   
+var vXhr = new XMLHttpRequest(); // créer l'objet XHR;
 
-    var tmp=[];
-    var src;
-    var result,data;
-    var agreg_avg_user, user_id=[], avg_score=[];
+function query(callback, query_to_send){ // appel du callback et send query après le listener
+
+    
 
     vXhr.onreadystatechange = function () {
 
-        if (vXhr.readyState == 4 && (vXhr.status == 200)) {// Si pas d'erreur -> traitement
+            if (vXhr.readyState == 4 && (vXhr.status == 200 || xhr.status==0)) 
+            {// Si pas d'erreur -> traitement
 
-            console.log("ready");
-            result = JSON.parse(vXhr.responseText);    // response
-            // console.log(res);
+                console.log("ready");
+                callback(JSON.parse(vXhr.responseText));
+                return vXhr.responseText;    
 
-            data= result.hits.hits;   //res.hits
-
-            agreg_avg_user=result.aggregations.avg_user.buckets; //=array de [{doc_count:..., key:..., score_avg:{value:...}}, {}, ... ]
-
-            //document.getElementById("paragraph").textContent =JSON.stringify(data);   //affiche <p></p> tableau : data=[{index:"", _type:"",...}]
-
-            // Extrait score_scaled de result
-            for (var i in data) // Un élément du tableau : data[i]={index:..., _type:...,...,_source: object}
-            {
-                //console.log(data[i]);//
-                src = data[i]._source; //src= object : {type:..., score_scaled:,... user:...}
-                //console.log(src);
-                tmp.push(src.score_scaled);
             }
-
-            // Extrait avg_score et user_id de result
-            for(var i in agreg_avg_user)
-            {
-                //console.log(agreg_avg_user)
-                user_id.push(agreg_avg_user[i].key);
-                avg_score.push(agreg_avg_user[i].score_avg.value);
+            else {
+                console.log("not ready yet")
             }
-        } else {
-            console.log("not ready yet")
-        }
+    };
+
+        vXhr.open("POST", "https://kibana4.kelis.fr/~~es/_search");
+
+        vXhr.setRequestHeader("Authorization", "Basic " + btoa("kelis:Otm8MSeYkWKL"));
+
+        vXhr.send(JSON.stringify(query_to_send));
+
+};
+
+
+function readData(response_to_format){ // traite la réponse XHR
+
+    var tmp=[];
+    var src;
+    //var result,data;
+    //var agreg_avg_user, 
+    var user_id=[], avg_score=[];
+
+    //var result = JSON.parse(vXhr.responseText);    // response
+    // console.log(res);
+
+    var data= response_to_format.hits.hits;   //res.hits
+
+    var agreg_avg_user=response_to_format.aggregations.avg_user.buckets; //=array de [{doc_count:..., key:..., score_avg:{value:...}}, {}, ... ]
+
+    //document.getElementById("paragraph").textContent =JSON.stringify(data);   //affiche <p></p> tableau : data=[{index:"", _type:"",...}]
+
+    // Extrait score_scaled de result
+    for (var i in data) // Un élément du tableau : data[i]={index:..., _type:...,...,_source: object}
+    {
+        
+        src = data[i]._source; //src= object : {type:..., score_scaled:,... user:...}
+        
+        tmp.push(src.score_scaled);
     }
+
+    // Extrait avg_score et user_id de result
+    for(var i in agreg_avg_user)
+    {
+        //console.log(agreg_avg_user)
+        user_id.push(agreg_avg_user[i].key);
+        avg_score.push(agreg_avg_user[i].score_avg.value);
+    }
+
+    plotMe(user_id,avg_score,0,0);
+    //return {x : user_id,    y : avg_score};
+
+};
+    
+function plotMe(x,y,xlabel, ylabel){
+
+//bar chart : avg_score per user
+x.unshift('User_id'); // enfile le label
+y.unshift('Average score'); // enfile le label
+
+//var bar_avg_user = 
+c3.generate({
+    bindto: '#bar_avg_user',
+    data: {
+        columns: [
+            //['data',0.06444984,0.465486484,0.46498489,0.484849856416,0.15649848498464,0.065165161651216510450,0.1564654649849,0.06444984]        
+            x,
+            y
+            //["Average score",0.3034398034398034, 0.23612278767618589, 0.3121876166435749, 0.3331830193615909, 0.2646209386281589, 0.3186494306194117, 0.28739786930626643, 0.36900994243851376, 0.3098351264389, 0.3249327921898115, 0.332651807161611, 0.4029387025465458, 0.5120053947504927, 0.2723386745413178, 0.32094071120619805, 0.2013559654631085, 0.22307692307692306, 0.20577826396830926, 0.30143523143523154, 0.29682907655510393, 0.39631364786099177, 0.18469945355191253, 0.18493559648489233, 0.33798953427524864, 0.4971062271062269, 0.4850823072509821, 0.31108663138002995, 0.4057009657009655, 0.24872427983539094, 0.3117071047764117, 0.152595812148051, 0.3351688544207247, 0.424204467211986, 0.2669580335062569, 0.5299310165300011, 0.3183717297930496, 0.28702003878474447, 0.2808653846153847, 0.3685850449724794, 0.1851043619547558, 0.378270483902063, 0.37643204164256805, 0.3196628876839961, 0.3440546261126735, 0.22160295378380487, 0.46456959706959716, 0.15548788091341278, 0.3138929697753227, 0.3755853949971597, 0.2247689944464138, 0.3425402733467251, 0.2937337035724131, 0.35414985733045035, 0.18124007524007535, 0.26985506385506375, 0.3814248784820991, 0.27523390324480257, 0.38474114441416885, 0.3570528461437555, 0.44306824488642665, 0.37023941068139954, 0.40496198479391743, 0.2754795439302482, 0.4230457617499869, 0.1796512903292564, 0.33371308540800065, 0.2559528983257798, 0.2634103184950645, 0.33945812450061746, 0.2887976606726606, 0.4126051032301032, 0.3335227272727273, 0.18796718950565128, 0.30337789465994586, 0.2803280959727951, 0.33306218685529015, 0.24693549745273863, 0.19828512483684904, 0.2713420105350941, 0.3411208580084662, 0.3074538948527389, 0.2452181922124118, 0.3041911132345915, 0.2514387641344163, 0.3326701592980662, 0.22622476360848456, 0.26852798364426284, 0.2521240081589934, 0.28539232697127437, 0.3638060964376755, 0.43834402156982794, 0.40728518793034907, 0.3990816634346048, 0.32846034987627926, 0.31491523226036494, 0.3518028677320713, 0.20474777448071213, 0.3256373079656663, 0.36589962931280295, 0.2733383781886776],
+
+        ],
+        type: 'bar'
+    },
+    bar: {
+        width: {
+            width:1 // this makes bar width 50% of length between ticks
+        }
+        // or
+        //width: 100 // this makes bar width 100px
+    }
+});
+
+
+
+}
+
+
+    query(readData,query_UL_phy_avg);
 
 </script>
 
 <!--make the plot-->
-<script type="text/javascript", src="plot_bar_avg_user.js"> </script>
 
 
 

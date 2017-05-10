@@ -41,7 +41,7 @@ function query(callback, query_to_send){ // appel du callback et send query apr√
 
     vXhr.onreadystatechange = function () {
 
-            if (vXhr.readyState == 4 && (vXhr.status == 200 || xhr.status==0)) 
+            if (vXhr.readyState == 4 && (vXhr.status == 200 || vXhr.status==0)) 
             {// Si pas d'erreur -> traitement
 
                 console.log("ready");
@@ -55,8 +55,8 @@ function query(callback, query_to_send){ // appel du callback et send query apr√
     };
 
         vXhr.open("POST", "https://kibana4.kelis.fr/~~es/_search");
-        vXhr.withCredentials = true; 
         vXhr.setRequestHeader("Authorization", "Basic " + btoa("kelis:Otm8MSeYkWKL"));
+        //vXhr.withCredentials = true; 
 
         vXhr.send(JSON.stringify(query_to_send));
 

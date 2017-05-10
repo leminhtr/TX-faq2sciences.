@@ -56,7 +56,7 @@ function query(callback, query_to_send){ // appel du callback et send query apr√
 
         vXhr.open("POST", "https://kibana4.kelis.fr/~~es/_search");
         vXhr.setRequestHeader("Authorization", "Basic " + btoa("kelis:Otm8MSeYkWKL"));
-        //vXhr.withCredentials = true; 
+        vXhr.withCredentials = true; 
 
         vXhr.send(JSON.stringify(query_to_send));
 

@@ -82,7 +82,7 @@ var query_UL_phy_excl={
 // Query avg_score : XContentApi && Phy01 && Sans groupe question_id (sans filter)
 // Pb.? Pas meme valeur avg trouvé avec Kibana.. => à priori pas de UL-Bio mais autant de "hits" qu'avec query_UL_phy_excl?
 var query_UL_phy_avg_user_id={
-    "from":0, "size":1000,
+    "from":0, "size":100,
     "query": {
         "bool": {
             "must":
@@ -122,7 +122,7 @@ var query_UL_phy_avg_user_id={
 
 
 var query_UL_phy_avg_quest_id={
-    "from":0, "size":1000,
+    "from":0, "size":100,
     "query": {
         "bool": {
             "must":
@@ -164,7 +164,7 @@ var query_UL_phy_avg_quest_id={
 
 
 var query_UL_Bio_avg_user_id={
-    "from":0, "size":1000,
+    "from":0, "size":100,
     "query": {
         "bool": {
             "must":

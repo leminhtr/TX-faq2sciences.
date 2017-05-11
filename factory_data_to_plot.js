@@ -27,7 +27,8 @@ var CLASS_DATA = {
 	yLabel:"",
 	title: "",
 	DOM_id: "",
-	nb_current:0,
+	from:0,
+	size:0,
 	mean:"",
 	mean_label:"",
 	stdev:"",
@@ -174,7 +175,47 @@ var divs = document.getElementsByTagName('div');
 //---------------------- AVERAGE SCORE PER USER ID ---------------------------------------------------
 // Bar chart : Average score per user (physique)
 var bar_avg_user_phy= Object.create(CLASS_DATA);
-bar_avg_user_phy.query=query_UL_phy_avg_user_id;
+bar_avg_user_phy.from=0;
+bar_avg_user_phy.size=100;
+
+bar_avg_user_phy.query={
+    "from":bar_avg_user_phy.from, "size":bar_avg_user_phy.size,
+    "query": {
+        "bool": {
+            "must":
+                [
+                    {"match":{ "type":"XContentApi"}},
+                    {"match":{"depot_path": "/Partenaires/UL/UL-Phy01"}},
+                    {"exists": {"field": "score_scaled"}}
+                ],
+
+            "must_not":
+                [
+                    {"match": {"question_id":"qgMx9nWg3feUknCfwecgli"}},
+                    {"match": {"question_id":"pky45GVJlvk0YYYe0wiTxe"}},
+                    {"match": {"question_id":"KDiQi0UNikeZBzySvmA2k"}},
+                    {"match": {"question_id":"Dvj5AqVq4RiIbIFWaJuSud"}},
+                    {"match": {"question_id":"qVTVybVQlxckqCv1EI54h"}},
+                    {"match": {"question_id":"udFJDEATISe7oQfqnd9Kki"}}
+                ]
+        }
+    },
+    "aggregations": {
+        "avg_user": {
+            "terms": {
+                "field": "user.raw",
+                "size":bar_avg_user_phy.size
+            },
+            "aggregations": {
+                "score_avg": {
+                    "avg": {
+                        "field": "score_scaled"
+                    }
+                }
+            }
+        }
+    }
+};
 bar_avg_user_phy.xLabel="User ID";
 bar_avg_user_phy.yLabel="Average Score of user";
 bar_avg_user_phy.title="Average Score (Physique) per User ID";
@@ -194,7 +235,49 @@ query(readData,bar_avg_user_phy);
 
 //Bar chart : Average score per user (biologie)
 var bar_avg_user_bio= Object.create(CLASS_DATA);
-bar_avg_user_bio.query=query_UL_Bio_avg_user_id;
+bar_avg_user_bio.from=0;
+bar_avg_user_bio.size=100;
+
+bar_avg_user_bio.query={
+    "from":bar_avg_user_bio.from, "size":bar_avg_user_bio.size,
+    "query": {
+        "bool": {
+            "must":
+                [
+                    {"match":{ "type":"XContentApi"}},
+                    {"match":{"depot_path": "/Partenaires/UL/UL-Bio"}},
+                    {"exists": {"field": "score_scaled"}}
+                ],
+
+            "must_not":
+                [
+                    {"match": {"question_id":"i6nRY2FhjtlKF4kAuRVlLi"}},
+                    {"match": {"question_id":"j74GTDxCdUh1AhUJbxzOCg"}},
+                    {"match": {"question_id":"Ro8Bn94sH5fiObRDLGMDub"}},
+                    {"match": {"question_id":"AXGE9teKhMdo4j0BsK6x8f"}},
+                    {"match": {"question_id":"AXGE9teKhMdo4j0BsK6x8f"}},
+                    {"match": {"question_id":"XSSBiN8sCL10gnc6XsIUi"}},
+                    {"match": {"question_id":"ImUQEzT8sjgXe0C5WIYD9g"}},
+                    {"match": {"question_id":"QWGy9VVCetknLGk0eUfkvc"}}
+                ]
+        }
+    },
+    "aggregations": {
+        "avg_user": {
+            "terms": {
+                "field": "user.raw",
+                "size":bar_avg_user_bio.size
+            },
+            "aggregations": {
+                "score_avg": {
+                    "avg": {
+                        "field": "score_scaled"
+                    }
+                }
+            }
+        }
+    }
+};
 bar_avg_user_bio.xLabel="User ID";
 bar_avg_user_bio.yLabel="Average Score of user";
 bar_avg_user_bio.title="Average Score (Biologie) per User ID";
@@ -216,7 +299,47 @@ query(readData,bar_avg_user_bio);
 //---------------------- AVERAGE SCORE PER QUESTION ID ---------------------------------------------------
 // Bar chart : Average score per question (physique)
 var bar_avg_quest_phy= Object.create(CLASS_DATA);
-bar_avg_quest_phy.query=query_UL_phy_avg_quest_id;
+bar_avg_quest_phy.from=0;
+bar_avg_quest_phy.size=100;
+
+bar_avg_quest_phy.query={
+    "from":bar_avg_quest_phy.from, "size":bar_avg_quest_phy.size,
+    "query": {
+        "bool": {
+            "must":
+                [
+                    {"match":{ "type":"XContentApi"}},
+                    {"match":{"depot_path": "/Partenaires/UL/UL-Phy01"}},
+                    {"exists": {"field": "score_scaled"}}
+                ],
+
+            "must_not":
+                [
+                    {"match": {"question_id":"qgMx9nWg3feUknCfwecgli"}},
+                    {"match": {"question_id":"pky45GVJlvk0YYYe0wiTxe"}},
+                    {"match": {"question_id":"KDiQi0UNikeZBzySvmA2k"}},
+                    {"match": {"question_id":"Dvj5AqVq4RiIbIFWaJuSud"}},
+                    {"match": {"question_id":"qVTVybVQlxckqCv1EI54h"}},
+                    {"match": {"question_id":"udFJDEATISe7oQfqnd9Kki"}}
+                ]
+        }
+    },
+    "aggregations": {
+        "avg_quest": {
+            "terms": {
+                "field": "question_id.raw",
+                "size":bar_avg_quest_phy.size
+            },
+            "aggregations": {
+                "score_avg": {
+                    "avg": {
+                        "field": "score_scaled"
+                    }
+                }
+            }
+        }
+    }
+};
 bar_avg_quest_phy.xLabel="Question ID";
 bar_avg_quest_phy.yLabel="Average Score of Question";
 bar_avg_quest_phy.title="Average Score (Physique) per Question ID";
@@ -236,7 +359,51 @@ query(readData,bar_avg_quest_phy);
 
 //Bar chart : Average score per question (biologie)
 var bar_avg_quest_bio= Object.create(CLASS_DATA);
-bar_avg_quest_bio.query=query_UL_Bio_avg_quest_id;
+bar_avg_quest_bio.from=0;
+bar_avg_quest_bio.size=100;
+
+bar_avg_quest_bio.query={
+    "from":bar_avg_quest_bio.from, "size":bar_avg_quest_bio.size,
+    "query": {
+        "bool": {
+            "must":
+                [
+                    {"match":{ "type":"XContentApi"}},
+                    {"match":{"depot_path": "/Partenaires/UL/UL-Bio"}},
+                    {"exists": {"field": "score_scaled"}}
+                ],
+
+            "must_not":
+                [
+                    {"match": {"question_id":"i6nRY2FhjtlKF4kAuRVlLi"}},
+                    {"match": {"question_id":"j74GTDxCdUh1AhUJbxzOCg"}},
+                    {"match": {"question_id":"Ro8Bn94sH5fiObRDLGMDub"}},
+                    {"match": {"question_id":"AXGE9teKhMdo4j0BsK6x8f"}},
+                    {"match": {"question_id":"AXGE9teKhMdo4j0BsK6x8f"}},
+                    {"match": {"question_id":"XSSBiN8sCL10gnc6XsIUi"}},
+                    {"match": {"question_id":"ImUQEzT8sjgXe0C5WIYD9g"}},
+                    {"match": {"question_id":"QWGy9VVCetknLGk0eUfkvc"}},
+                    
+
+                ]
+        }
+    },
+    "aggregations": {
+        "avg_quest": {
+            "terms": {
+                "field": "question_id.raw",
+                "size":bar_avg_quest_bio.size
+            },
+            "aggregations": {
+                "score_avg": {
+                    "avg": {
+                        "field": "score_scaled"
+                    }
+                }
+            }
+        }
+    }
+};
 bar_avg_quest_bio.xLabel="User ID";
 bar_avg_quest_bio.yLabel="Average Score of Question";
 bar_avg_quest_bio.title="Average Score (Biologie) per Question ID";

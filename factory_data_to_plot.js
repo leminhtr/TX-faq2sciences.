@@ -1,3 +1,23 @@
+function loadScript(url, callback)
+{
+    // Prépare l'ajoute du script au head
+    var head = document.getElementsByTagName('head')[0];
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = url;
+ 
+    // Lance une callback à la fin de la tâche
+    script.onreadystatechange = callback;
+    script.onload = callback;
+ 
+    // Ajoute le script
+    head.appendChild(script);
+}
+
+loadScript("es_query.js", function(){
+    console.log("Script charge!");
+});
+
 // Object definition : Conception à revoir si besoin pour modularité. Peut-être intégrer méthodes à l'objet ?
 var CLASS_DATA = {
 	query:"",

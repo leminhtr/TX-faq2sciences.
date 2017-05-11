@@ -81,7 +81,7 @@ var query_UL_phy_excl={
 
 // Query avg_score : XContentApi && Phy01 && Sans groupe question_id (sans filter)
 // Pb.? Pas meme valeur avg trouvé avec Kibana.. => à priori pas de UL-Bio mais autant de "hits" qu'avec query_UL_phy_excl?
-var query_UL_phy_avg={
+var query_UL_phy_avg_user_id={
     "from":0, "size":1000,
     "query": {
         "bool": {
@@ -146,7 +146,7 @@ var query_UL_phy_avg_quest_id={
     "aggregations": {
         "avg_quest": {
             "terms": {
-                "field": "question_id",
+                "field": "question_id.raw",
                 "size":100
             },
             "aggregations": {
@@ -188,7 +188,7 @@ var query_UL_Bio_avg_user_id={
         }
     },
     "aggregations": {
-        "avg_quest": {
+        "avg_user": {
             "terms": {
                 "field": "user.raw",
                 "size":100
@@ -205,9 +205,8 @@ var query_UL_Bio_avg_user_id={
 };
 
 
-
 var query_UL_Bio_avg_quest_id={
-    "from":0, "size":1000,
+    "from":0, "size":100,
     "query": {
         "bool": {
             "must":
@@ -226,14 +225,16 @@ var query_UL_Bio_avg_quest_id={
                     {"match": {"question_id":"AXGE9teKhMdo4j0BsK6x8f"}},
                     {"match": {"question_id":"XSSBiN8sCL10gnc6XsIUi"}},
                     {"match": {"question_id":"ImUQEzT8sjgXe0C5WIYD9g"}},
-                    {"match": {"question_id":"QWGy9VVCetknLGk0eUfkvc"}}
+                    {"match": {"question_id":"QWGy9VVCetknLGk0eUfkvc"}},
+                    
+
                 ]
         }
     },
     "aggregations": {
         "avg_quest": {
             "terms": {
-                "field": "question_id",
+                "field": "question_id.raw",
                 "size":100
             },
             "aggregations": {

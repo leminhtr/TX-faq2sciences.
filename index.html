@@ -14,6 +14,8 @@
     <!-- Load plotly js -->
     <script src="plotly-latest.min.js"></script>
 
+    <!-- include jStat, from the CDN or otherwise -->
+    <script src="./jStat/jstat.js"></script> 
 
     
 
@@ -24,13 +26,20 @@
 <p id="paragraph"></p>
 
 
-<div id="bar_avg_user"></div>
+<div id="bar_avg_user_phy"></div>
+<div id="bar_avg_user_bio"></div>
+<div id="bar_avg_quest_phy"></div>
+<div id="bar_avg_quest_bio"></div>
+
 
 
 <script src="es_query.js"></script>
+<script src="factory_data_to_plot.js"></script>
+
+<!-- <button onclick="setTimeout(query(readData,bar_avg_user_bio), 300)">Try it</button> -->
 
 <!--appel ES && récupère data-->
-<script>
+<!-- <script>
 
    
 
@@ -63,7 +72,7 @@ function query(callback, query_to_send){ // appel du callback et send query apr�
 };
 
 
-function readData(response_to_format){ // traite la réponse XHR
+function readData(response_to_format/*,xlabel,ylabel,div_id : argument de plotMe()*/){ // traite la réponse XHR
 
     var tmp=[];
     var src;
@@ -97,47 +106,64 @@ function readData(response_to_format){ // traite la réponse XHR
         avg_score.push(agreg_avg_user[i].score_avg.value);
     }
 
-    plotMe(user_id,avg_score,'User_ID','Average score');
+    plotBar(user_id,avg_score,'User_ID','Average score','bar_avg_user_phy', 'Average score per user');
     //return {x : user_id,    y : avg_score};
 
 };
     
-function plotMe(x,y,xlabel, ylabel){
+function plotBar(x,y,xlabel, ylabel, div_id, title){
 
 //bar chart : avg_score per user
-x.unshift(xlabel); // enfile le label
-y.unshift(ylabel); // enfile le label
+// x.unshift(xlabel); // enfile le label
+// y.unshift(ylabel); // enfile le label
 
-//var bar_avg_user = 
-c3.generate({
-    bindto: '#bar_avg_user',
-    data: {
+
+// //var bar_avg_user = 
+// c3.generate({
+//     bindto: '#'+ div_id,
+//     data: {
         
 
-        columns: [           
-            //x, 
-            y            
-        ],
+//         columns: [           
+//             //x, 
+//             y            
+//         ],
+//         type: 'bar'
+//     },
+
+//     bar: {
+//         width: {
+//             width:1 // this makes bar width 50% of length between ticks
+//         }
+//         // or
+//         //width: 100 // this makes bar width 100px
+//     }
+
+// });
+
+
+ var data = [
+     {
+        //x: x,  // Label axe x
+        y: y,   // Données axe y
+        name : 'Average score',
         type: 'bar'
-    },
-    bar: {
-        width: {
-            width:1 // this makes bar width 50% of length between ticks
-        }
-        // or
-        //width: 100 // this makes bar width 100px
-    }
-
-});
-
+     }
+ ];
+var layout = {
+    title: 'Average score per user',    
+    showlegend: true
+};
+Plotly.newPlot('bar_avg_user_bio', data, layout, {displaylogo: false});
 
 
 }
 
 
     query(readData,query_UL_phy_avg);
+    //query(readData,query_UL_phy_avg);
 
-</script>
+</script> -->
 
 <!--make the plot-->
 

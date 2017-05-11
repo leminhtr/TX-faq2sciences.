@@ -1,0 +1,10 @@
+
+\.idea/
+
+node_modules/
+
+elasticsearch\.angular\.js
+
+elasticsearch\.angular\.min\.js
+
+id_auth\.js

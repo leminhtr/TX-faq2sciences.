@@ -34,10 +34,15 @@ var CLASS_DATA = {
 	stdev:"",
 	stdev_upper_label:"",
 	stdev_lower_label:"",
-	format_result: function(response_to_format){}
-
+	format_result: function(response_to_format){},
+	nb_tot:"",
+	set_nb_tot:function(response_to_format){
+    	var nb;
+    	nb=response_to_format.hits.total; //=array de [{doc_count:..., key:..., score_avg:{value:...}}, {}, ... ]    	    
+		return nb;
+	},
+	update_query_from:function(new_from){this.query.from=new_from}
 };
-
 
 function query(callback, class_data){ // appel du callback et send query après le listener
 
@@ -68,14 +73,13 @@ function query(callback, class_data){ // appel du callback et send query après 
 
 
 function readData(response_to_format, class_data){ // traite la réponse Xhr
-
     var xtab=[], ytab=[];
     var agreg_avg=class_data.format_result(response_to_format);
     
     // si query est sur avg_user
     //agreg_avg=response_to_format.aggregations.avg_user.buckets; //=array de [{doc_count:..., key:..., score_avg:{value:...}}, {}, ... ]    	
   
-
+    class_data.nb_tot=class_data.set_nb_tot(response_to_format);
     // Extrait avg_score et user_id de result
     for(var i in agreg_avg)
     {
@@ -420,7 +424,12 @@ bar_avg_quest_bio.format_result= function avg_quest_format(response_to_format){
 
 query(readData,bar_avg_quest_bio);
 
+function total_size(response_to_format){
+    var nb;
+    nb=response_to_format.hits.total; //=array de [{doc_count:..., key:..., score_avg:{value:...}}, {}, ... ]    	    
 
+    return nb;
+}
 
 
 

@@ -91,8 +91,8 @@ function readData(response_to_format, class_data){ // traite la réponse Xhr
     class_data.xData=xtab;
     class_data.yData=ytab;
 
-    class_data.mean=jStat.mean(ytab);
-    class_data.stdev=jStat.stdev(ytab, true);	// true : stddev non biaisé
+    class_data.mean=jStat.mean(class_data.yData);
+    class_data.stdev=jStat.stdev(class_data.yData, true);	// true : stddev non biaisé
     //plotBar(user_id,avg_score,class_data.xLabel,class_data.yLabel,class_data.DOM_id,class_data.title);
     plotBar(class_data);
 };
@@ -112,7 +112,7 @@ function plotBar(class_data){
 var mean_line={
  	name:class_data.mean_label,     	
  	type:'lines',
- 	x:[0,100],
+ 	x:[0,class_data.size],
  	y:[class_data.mean,class_data.mean],
  	marker: {         // marker is an object, valid marker keys: #scatter-marker
         color: 'rgb(255,140,0)'
@@ -123,7 +123,7 @@ data.push(mean_line);	// add to plotly
 var stdev_upper_line={
  	name:class_data.stdev_upper_label,     	
  	type:'lines',
- 	x:[0,100],
+ 	x:[0,class_data.size],
 	y:[class_data.mean+class_data.stdev,class_data.mean+class_data.stdev],	// moyenne + écart type corrigée
  	marker: {         // marker is an object, valid marker keys: #scatter-marker
         color: 'rgb(51,255,51)'
@@ -134,7 +134,7 @@ data.push(stdev_upper_line);	//add to plotly
 var stdev_lower_line={
  	name:class_data.stdev_lower_label,     	
  	type:'lines',
- 	x:[0,100],
+ 	x:[0,class_data.size],
 	y:[class_data.mean-class_data.stdev,class_data.mean-class_data.stdev],	// moyenne - écart type corrigée
  	marker: {         // marker is an object, valid marker keys: #scatter-marker
         color: 'rgb(255,51,51)'
@@ -169,7 +169,7 @@ var layout = {
   // ]
 };
 
-Plotly.newPlot(class_data.DOM_id, data, layout, {displaylogo: false});
+Plotly.newPlot(class_data.DOM_id, data, layout, {displaylogo: false}, {showLink: false});
 
 }
 
@@ -180,7 +180,7 @@ var divs = document.getElementsByTagName('div');
 // Bar chart : Average score per user (physique)
 var bar_avg_user_phy= Object.create(CLASS_DATA);
 bar_avg_user_phy.from=0;
-bar_avg_user_phy.size=100;
+bar_avg_user_phy.size=780;
 
 bar_avg_user_phy.query={
     "from":bar_avg_user_phy.from, "size":bar_avg_user_phy.size,
@@ -240,7 +240,7 @@ query(readData,bar_avg_user_phy);
 //Bar chart : Average score per user (biologie)
 var bar_avg_user_bio= Object.create(CLASS_DATA);
 bar_avg_user_bio.from=0;
-bar_avg_user_bio.size=100;
+bar_avg_user_bio.size=780;
 
 bar_avg_user_bio.query={
     "from":bar_avg_user_bio.from, "size":bar_avg_user_bio.size,
@@ -304,7 +304,7 @@ query(readData,bar_avg_user_bio);
 // Bar chart : Average score per question (physique)
 var bar_avg_quest_phy= Object.create(CLASS_DATA);
 bar_avg_quest_phy.from=0;
-bar_avg_quest_phy.size=100;
+bar_avg_quest_phy.size=480;
 
 bar_avg_quest_phy.query={
     "from":bar_avg_quest_phy.from, "size":bar_avg_quest_phy.size,
@@ -364,7 +364,7 @@ query(readData,bar_avg_quest_phy);
 //Bar chart : Average score per question (biologie)
 var bar_avg_quest_bio= Object.create(CLASS_DATA);
 bar_avg_quest_bio.from=0;
-bar_avg_quest_bio.size=100;
+bar_avg_quest_bio.size=500;
 
 bar_avg_quest_bio.query={
     "from":bar_avg_quest_bio.from, "size":bar_avg_quest_bio.size,

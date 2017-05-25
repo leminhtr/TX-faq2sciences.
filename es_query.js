@@ -1,3 +1,6 @@
+// ------------------------ /!\ NOT UPDATED -----------------------------
+
+
 // Query all document
 //    var query_all={
 //        "query": {
@@ -222,10 +225,13 @@ var query_UL_Bio_avg_quest_id={
                     {"match": {"question_id":"j74GTDxCdUh1AhUJbxzOCg"}},
                     {"match": {"question_id":"Ro8Bn94sH5fiObRDLGMDub"}},
                     {"match": {"question_id":"AXGE9teKhMdo4j0BsK6x8f"}},
-                    {"match": {"question_id":"AXGE9teKhMdo4j0BsK6x8f"}},
+                    {"match": {"question_id":"BdYLqQ15ObfDNWH4r8ES1d"}},
                     {"match": {"question_id":"XSSBiN8sCL10gnc6XsIUi"}},
                     {"match": {"question_id":"ImUQEzT8sjgXe0C5WIYD9g"}},
                     {"match": {"question_id":"QWGy9VVCetknLGk0eUfkvc"}},
+                    {"match": {"question_id":"LWF7Tquh7XgWIQLImXgie"}},
+                    {"match": {"question_id":"XSSBiN8sCL10gnc6XsIUi"}},
+
                     
 
                 ]
@@ -247,33 +253,3 @@ var query_UL_Bio_avg_quest_id={
         }
     }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

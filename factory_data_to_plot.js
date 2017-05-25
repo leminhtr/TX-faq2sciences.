@@ -95,6 +95,7 @@ function readData(response_to_format, class_data){ // traite la réponse Xhr
     class_data.xData=xtab;
     class_data.yData=ytab;
     class_data.data=data_frame;
+    class_data.size=class_data.yData.length;	// update size of data
 
     class_data.mean=jStat.mean(class_data.yData);
     class_data.stdev=jStat.stdev(class_data.yData, true);	// true : stddev non biaisé
@@ -150,9 +151,9 @@ function plotBar(class_data){
  //    class_data.xData=xtab;
  //    class_data.yData=ytab;
 
-	var xmin = jStat.min( class_data.xData);
-	var xmax= jStat.max( class_data.xData);
-
+	// var xmin = jStat.min( class_data.xData);
+	// var xmax= jStat.max( class_data.xData);
+console.log(class_data.size);
  var data = [
      {
         //x: class_data.xData,  // Données axe x
@@ -206,7 +207,8 @@ data.push(stdev_lower_line);
 // }
 var layout = {
     title: class_data.title,    
-    showlegend: true
+    showlegend: true,
+    yaxis: {range: [0,1]}	// setting manual range of axes
   //    shapes: [
   //   //Line Horizontal
   //   {
@@ -225,78 +227,19 @@ var layout = {
 
 Plotly.newPlot(class_data.DOM_id, data, layout, {displaylogo: false}, {showLink: false});
 
-}
+}	//end function plotBar
 
 // --------------------------------------------------------------------------------------------------
 var divs = document.getElementsByTagName('div');
 
 //---------------------- AVERAGE SCORE PER USER ID ---------------------------------------------------
-// Bar chart : Average score per user (physique)
-// var bar_avg_user_phy= Object.create(CLASS_DATA);
-// bar_avg_user_phy.from=0;
-// bar_avg_user_phy.size=780;
-
-// bar_avg_user_phy.query={
-//     "from":bar_avg_user_phy.from, "size":bar_avg_user_phy.size,
-//     "query": {
-//         "bool": {
-//             "must":
-//                 [
-//                     {"match":{ "type":"XContentApi"}},
-//                     {"match":{"depot_path": "/Partenaires/UL/UL-Phy01"}},
-//                     {"exists": {"field": "score_scaled"}}
-//                 ],
-
-//             "must_not":
-//                 [
-//                     {"match": {"question_id":"qgMx9nWg3feUknCfwecgli"}},
-//                     {"match": {"question_id":"pky45GVJlvk0YYYe0wiTxe"}},
-//                     {"match": {"question_id":"KDiQi0UNikeZBzySvmA2k"}},
-//                     {"match": {"question_id":"Dvj5AqVq4RiIbIFWaJuSud"}},
-//                     {"match": {"question_id":"qVTVybVQlxckqCv1EI54h"}},
-//                     {"match": {"question_id":"udFJDEATISe7oQfqnd9Kki"}}
-//                 ]
-//         }
-//     },
-//     "aggregations": {
-//         "avg_user": {
-//             "terms": {
-//                 "field": "user.raw",
-//                 "size":bar_avg_user_phy.size
-//             },
-//             "aggregations": {
-//                 "score_avg": {
-//                     "avg": {
-//                         "field": "score_scaled"
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// };
-// bar_avg_user_phy.xLabel="étudiant";
-// bar_avg_user_phy.yLabel="Score moyen d'un étudiant";
-// bar_avg_user_phy.title="Score moyen d'un étudiant au test de physique";
-// bar_avg_user_phy.mean_label="Score total moyen des étudiants";
-// bar_avg_user_phy.stdev_lower_label="Score total moyen des étudiants - l'écart type";
-// bar_avg_user_phy.stdev_upper_label="Score total moyen des étudiants + l'écart type";
-// bar_avg_user_phy.DOM_id="bar_avg_user_phy";
-// bar_avg_user_phy.format_result= function avg_user_format(response_to_format){
-//     var agreg_avg=[];
-//     agreg_avg=response_to_format.aggregations.avg_user.buckets; //=array de [{doc_count:..., key:..., score_avg:{value:...}}, {}, ... ]    	    
-
-//     return agreg_avg;
-// }
-
-// query(readData,bar_avg_user_phy);
-
 
 var bar_avg_user_phy= Object.create(CLASS_DATA);
 bar_avg_user_phy.from=0;
-bar_avg_user_phy.size=700;
+bar_avg_user_phy.size=800;
 
 bar_avg_user_phy.query={
-  "aggregations": {
+  "aggs": {
     "result": {
       "filter": {
         "bool": {
@@ -311,16 +254,17 @@ bar_avg_user_phy.query={
                 "depot_path": "UL-Phy01"
               }
             },
-            {
+                        {
               "match": {
                 "depot_path": "UL"
               }
             },
-            {
+                        {
               "match": {
                 "depot_path": "Partenaires"
               }
             },
+
             {
               "exists": {
                 "field": "score_scaled"
@@ -336,17 +280,18 @@ bar_avg_user_phy.query={
                   {"match": {"question_id":"Dvj5AqVq4RiIbIFWaJuSud"}},
                   {"match": {"question_id":"qVTVybVQlxckqCv1EI54h"}},
                   {"match": {"question_id":"udFJDEATISe7oQfqnd9Kki"}},
-                  {"match": {"depot_path":"Bio"}}
+                    {"match": {"depot_path":"Bio"}}
                 ]
         }
       },
-      "aggregations": {
+      "aggs": {
         "avg_user": {
           "terms": {
             "field": "user.raw",
-            "size": bar_avg_user_phy.size
+            "size": bar_avg_user_phy.size,
+            "order":{"score_avg" : "desc"}
           },
-          "aggregations": {
+          "aggs": {
             "score_avg": {
               "avg": {
                 "field": "score_scaled"
@@ -358,6 +303,7 @@ bar_avg_user_phy.query={
     }
   }
 }
+
 bar_avg_user_phy.xLabel="étudiant";
 bar_avg_user_phy.yLabel="Score moyen d'un étudiant";
 bar_avg_user_phy.title="Score moyen d'un étudiant au test de physique";
@@ -372,7 +318,7 @@ bar_avg_user_phy.format_result= function avg_user_format(response_to_format){
     return agreg_avg;
 }
 
-query(readData,bar_avg_user_phy);
+query(readData,bar_avg_user_phy);	//appel serveur + plot
 
 
 
@@ -442,10 +388,10 @@ query(readData,bar_avg_user_phy);
 
 var bar_avg_user_bio= Object.create(CLASS_DATA);
 bar_avg_user_bio.from=0;
-bar_avg_user_bio.size=700;
+bar_avg_user_bio.size=800;	// size inconnu avant requête
 
 bar_avg_user_bio.query={
-  "aggregations": {
+  "aggs": {
     "result": {
       "filter": {
         "bool": {
@@ -489,18 +435,19 @@ bar_avg_user_bio.query={
 					{"match" : {"question_id":"ImUQEzT8sjgXe0C5WIYD9g"} },
 					{"match" : {"question_id":"QWGy9VVCetknLGk0eUfkvc"} },
 					{"match" : {"question_id":"LWF7Tquh7XgWIQLImXgie"} },
-					{"match" : {"question_id":"XSSBiN8sCL10gnc6XsIUi"} },
-                    {"match": {"depot_path":"Phy01"}}
+					{"match" : {"question_id":"XSSBiN8sCL10gnc6XsIUi"} },                 
+					{"match": {"depot_path":"Phy01"}}
                 ]
         }
       },
-      "aggregations": {
+      "aggs": {
         "avg_user": {
           "terms": {
             "field": "user.raw",
-            "size": bar_avg_user_bio.size
+            "size": bar_avg_user_bio.size,
+            "order":{"score_avg" : "desc"}
           },
-          "aggregations": {
+          "aggs": {
             "score_avg": {
               "avg": {
                 "field": "score_scaled"
@@ -532,46 +479,74 @@ query(readData,bar_avg_user_bio);
 // Bar chart : Average score per question (physique)
 var bar_avg_quest_phy= Object.create(CLASS_DATA);
 bar_avg_quest_phy.from=0;
-bar_avg_quest_phy.size=480;
+bar_avg_quest_phy.size=40;
 
 bar_avg_quest_phy.query={
-    "from":bar_avg_quest_phy.from, "size":bar_avg_quest_phy.size,
-    "query": {
+  "aggs": {
+    "result": {
+      "filter": {
         "bool": {
-            "must":
-                [
-                    {"match":{ "type":"XContentApi"}},
-                    {"match":{"depot_path": "/Partenaires/UL/UL-Phy01"}},
-                    {"exists": {"field": "score_scaled"}}
-                ],
+          "must": [
+            {
+              "match": {
+                "type": "XContentApi"
+              }
+            },
+            {
+              "match": {
+                "depot_path": "UL-Phy01"
+              }
+            },
+                        {
+              "match": {
+                "depot_path": "UL"
+              }
+            },
+                        {
+              "match": {
+                "depot_path": "Partenaires"
+              }
+            },
 
-            "must_not":
+            {
+              "exists": {
+                "field": "score_scaled"
+              }
+            }
+            
+          ],
+          "must_not":
                 [
-                    {"match": {"question_id":"qgMx9nWg3feUknCfwecgli"}},
-                    {"match": {"question_id":"pky45GVJlvk0YYYe0wiTxe"}},
-                    {"match": {"question_id":"KDiQi0UNikeZBzySvmA2k"}},
-                    {"match": {"question_id":"Dvj5AqVq4RiIbIFWaJuSud"}},
-                    {"match": {"question_id":"qVTVybVQlxckqCv1EI54h"}},
-                    {"match": {"question_id":"udFJDEATISe7oQfqnd9Kki"}}
+                  {"match": {"question_id":"qgMx9nWg3feUknCfwecgli"}},
+                  {"match": {"question_id":"pky45GVJlvk0YYYe0wiTxe"}},
+                  {"match": {"question_id":"KDiQi0UNikeZBzySvmA2k"}},
+                  {"match": {"question_id":"Dvj5AqVq4RiIbIFWaJuSud"}},
+                  {"match": {"question_id":"qVTVybVQlxckqCv1EI54h"}},
+                  {"match": {"question_id":"udFJDEATISe7oQfqnd9Kki"}},
+                    {"match": {"depot_path":"Bio"}}
                 ]
         }
-    },
-    "aggregations": {
-        "avg_quest": {
-            "terms": {
-                "field": "question_id.raw",
-                "size":bar_avg_quest_phy.size
-            },
-            "aggregations": {
-                "score_avg": {
-                    "avg": {
-                        "field": "score_scaled"
-                    }
-                }
+      },
+      "aggs": {
+        "avg_user": {
+          "terms": {
+            "field": "question_id.raw",
+            "size": bar_avg_quest_phy.size,
+            "order":{"score_avg" : "desc"}
+          },
+          "aggs": {
+            "score_avg": {
+              "avg": {
+                "field": "score_scaled"
+              }
             }
+          }
         }
+      }
     }
+  }
 };
+
 bar_avg_quest_phy.xLabel="Question de physique";
 bar_avg_quest_phy.yLabel="Score moyen d'une question";
 bar_avg_quest_phy.title="Score moyen des questions au test de physique";
@@ -579,12 +554,13 @@ bar_avg_quest_phy.mean_label="Score total moyen des questions du test de physiqu
 bar_avg_quest_phy.stdev_lower_label="Score total moyen des questions - l'écart type";
 bar_avg_quest_phy.stdev_upper_label="Score total moyen des question + l'écart type";
 bar_avg_quest_phy.DOM_id="bar_avg_quest_phy";
-bar_avg_quest_phy.format_result= function avg_quest_format(response_to_format){
+bar_avg_quest_phy.format_result= function avg_test_format(response_to_format){
     var agreg_avg=[];
-    agreg_avg=response_to_format.aggregations.avg_quest.buckets; //=array de [{doc_count:..., key:..., score_avg:{value:...}}, {}, ... ]    	    
+    agreg_avg=response_to_format.aggregations.result.avg_user.buckets; //=array de [{doc_count:..., key:..., score_avg:{value:...}}, {}, ... ]    	    
 
     return agreg_avg;
 }
+
 
 query(readData,bar_avg_quest_phy);
 
@@ -595,52 +571,75 @@ bar_avg_quest_bio.from=0;
 bar_avg_quest_bio.size=500;
 
 bar_avg_quest_bio.query={
-    "query": {
-        "filtered": {
-            "query": {
-                "match_all": {}
+  "aggs": {
+    "result": {
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "match": {
+                "type": "XContentApi"
+              }
             },
-            "filter": {
-                "bool": {                    
-                        "must_not" : [
-                            {"match" : {"question_id":"j74GTDxCdUh1AhUJbxzOCg"} },
-                            {"match" : {"question_id":"i6nRY2FhjtlKF4kAuRVlLi"} },
-                            {"match" : {"question_id":"Ro8Bn94sH5fiObRDLGMDub"} },
-                            {"match" : {"question_id":"AXGE9teKhMdo4j0BsK6x8f"} },
-                            {"match" : {"question_id":"BdYLqQ15ObfDNWH4r8ES1d"} },
-                            {"match" : {"question_id":"XSSBiN8sCL10gnc6XsIUi"} },
-                            {"match" : {"question_id":"ImUQEzT8sjgXe0C5WIYD9g"} },
-                            {"match" : {"question_id":"QWGy9VVCetknLGk0eUfkvc"} },
-                            {"match" : {"question_id":"LWF7Tquh7XgWIQLImXgie"} },
-                            {"match" : {"question_id":"XSSBiN8sCL10gnc6XsIUi"} },
-							//{"match":  {"depot_path": "/Partenaires/UL/UL-Phy01"}},
+            {
+              "match": {
+                "depot_path": "UL-Bio"
+              }
+            },
+                        {
+              "match": {
+                "depot_path": "UL"
+              }
+            },
+                        {
+              "match": {
+                "depot_path": "Partenaires"
+              }
+            },
 
-                        ],
-                        "must" : [
-                            {"match" : { "type" : "XContentApi" } },
-                            {"match" : { "depot_path" : "/Partenaires/UL/UL-Bio"}},
-                            {"exists" : { "field" : "score_scaled" } }
-                        ]     
-                }
+            {
+              "exists": {
+                "field": "score_scaled"
+              }
             }
+            
+          ],
+          "must_not":
+                [
+                  {"match" : {"question_id":"j74GTDxCdUh1AhUJbxzOCg"} },
+                  {"match" : {"question_id":"i6nRY2FhjtlKF4kAuRVlLi"} },
+                  {"match" : {"question_id":"Ro8Bn94sH5fiObRDLGMDub"} },
+                  {"match" : {"question_id":"AXGE9teKhMdo4j0BsK6x8f"} },
+                  {"match" : {"question_id":"BdYLqQ15ObfDNWH4r8ES1d"} },
+                  {"match" : {"question_id":"XSSBiN8sCL10gnc6XsIUi"} },
+                  {"match" : {"question_id":"ImUQEzT8sjgXe0C5WIYD9g"} },
+                  {"match" : {"question_id":"QWGy9VVCetknLGk0eUfkvc"} },
+                  {"match" : {"question_id":"LWF7Tquh7XgWIQLImXgie"} },
+                  {"match" : {"question_id":"XSSBiN8sCL10gnc6XsIUi"} },
+                  {"match": {"depot_path":"Phy01"}}
+                ]
         }
-    },
-    "aggregations": {
-    "avg_quest": {
-        "terms": {
+      },
+      "aggs": {
+        "avg_user": {
+          "terms": {
             "field": "question_id.raw",
-            "size":780
-        },
-        "aggregations": {
+            "size": bar_avg_quest_bio.size,
+            "order":{"score_avg" : "desc"}
+          },
+          "aggs": {
             "score_avg": {
-                "avg": {
-                    "field": "score_scaled"
-                }
+              "avg": {
+                "field": "score_scaled"
+              }
             }
+          }
         }
+      }
     }
+  }
 }
-}
+
 
 /*bar_avg_quest_bio.query={
     "from":bar_avg_quest_bio.from, "size":bar_avg_quest_bio.size,
@@ -691,9 +690,9 @@ bar_avg_quest_bio.mean_label="Score total moyen des questions du test de biologi
 bar_avg_quest_bio.stdev_lower_label="Score total moyen des questions - l'écart type";
 bar_avg_quest_bio.stdev_upper_label="Score total moyen des question + l'écart type";
 bar_avg_quest_bio.DOM_id="bar_avg_quest_bio";
-bar_avg_quest_bio.format_result= function avg_quest_format(response_to_format){
+bar_avg_quest_bio.format_result= function avg_test_format(response_to_format){
     var agreg_avg=[];
-    agreg_avg=response_to_format.aggregations.avg_quest.buckets; //=array de [{doc_count:..., key:..., score_avg:{value:...}}, {}, ... ]    	    
+    agreg_avg=response_to_format.aggregations.result.avg_user.buckets; //=array de [{doc_count:..., key:..., score_avg:{value:...}}, {}, ... ]    	    
 
     return agreg_avg;
 }

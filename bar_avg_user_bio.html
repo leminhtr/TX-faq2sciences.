@@ -20,7 +20,7 @@
 	
 var test= Object.create(CLASS_DATA);
 test.from=0;
-test.size=225;
+test.size=800;
 
 test.query={
   "aggs": {
@@ -58,12 +58,16 @@ test.query={
           ],
           "must_not":
                 [
-                  {"match": {"question_id":"qgMx9nWg3feUknCfwecgli"}},
-                  {"match": {"question_id":"pky45GVJlvk0YYYe0wiTxe"}},
-                  {"match": {"question_id":"KDiQi0UNikeZBzySvmA2k"}},
-                  {"match": {"question_id":"Dvj5AqVq4RiIbIFWaJuSud"}},
-                  {"match": {"question_id":"qVTVybVQlxckqCv1EI54h"}},
-                  {"match": {"question_id":"udFJDEATISe7oQfqnd9Kki"}},
+                  {"match" : {"question_id":"j74GTDxCdUh1AhUJbxzOCg"} },
+                  {"match" : {"question_id":"i6nRY2FhjtlKF4kAuRVlLi"} },
+                  {"match" : {"question_id":"Ro8Bn94sH5fiObRDLGMDub"} },
+                  {"match" : {"question_id":"AXGE9teKhMdo4j0BsK6x8f"} },
+                  {"match" : {"question_id":"BdYLqQ15ObfDNWH4r8ES1d"} },
+                  {"match" : {"question_id":"XSSBiN8sCL10gnc6XsIUi"} },
+                  {"match" : {"question_id":"ImUQEzT8sjgXe0C5WIYD9g"} },
+                  {"match" : {"question_id":"QWGy9VVCetknLGk0eUfkvc"} },
+                  {"match" : {"question_id":"LWF7Tquh7XgWIQLImXgie"} },
+                  {"match" : {"question_id":"XSSBiN8sCL10gnc6XsIUi"} },
                     {"match": {"depot_path":"Phy01"}}
                 ]
         }
@@ -71,7 +75,7 @@ test.query={
       "aggs": {
         "avg_user": {
           "terms": {
-            "field": "question_id.raw",
+            "field": "user.raw",
             "size": "1000",
             "order":{"score_avg" : "desc"}
           },
@@ -88,13 +92,12 @@ test.query={
   }
 }
 
-
-test.xLabel="Question de biologie";
-test.yLabel="Score moyen d'une question";
-test.title="Score moyen des questions au test de biologie";
-test.mean_label="Score total moyen des questions du test de biologie";
-test.stdev_lower_label="Score total moyen des questions - l'écart type";
-test.stdev_upper_label="Score total moyen des question + l'écart type";
+test.xLabel="étudiant";
+test.yLabel="Score moyen d'un étudiant";
+test.title="Score moyen d'un étudiant au test de biologie";
+test.mean_label="Score total moyen des étudiants";
+test.stdev_lower_label="Score total moyen des étudiants - l'écart type";
+test.stdev_upper_label="Score total moyen des étudiants + l'écart type";
 test.DOM_id="test";
 test.format_result= function avg_test_format(response_to_format){
     var agreg_avg=[];

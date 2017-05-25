@@ -253,3 +253,175 @@ var query_UL_Bio_avg_quest_id={
         }
     }
 };
+
+//Questionnaire Phy01
+var query_verb_search={
+    
+  "query": {
+   
+      
+        "bool": {
+          "must": [
+            {
+              "match": {
+                "type": "XContentApi"
+              }
+            },
+            {
+              "match": {
+                "depot_path": "UL-Phy01"
+              }
+            },
+                        {
+              "match": {
+                "depot_path": "UL"
+              }
+            },
+                        {
+              "match": {
+                "depot_path": "Partenaires"
+              }
+            },
+
+            {
+              "exists": {
+                "field": "score_scaled"
+              }
+            },
+             {
+              "match": {
+                "verb.raw": "attempted"
+              }
+            }
+            
+          ],
+          "must_not":
+                [
+  {"match": {"question_id":"qgMx9nWg3feUknCfwecgli"}},
+                  {"match": {"question_id":"pky45GVJlvk0YYYe0wiTxe"}},
+                  {"match": {"question_id":"KDiQi0UNikeZBzySvmA2k"}},
+                  {"match": {"question_id":"Dvj5AqVq4RiIbIFWaJuSud"}},
+                  {"match": {"question_id":"qVTVybVQlxckqCv1EI54h"}},
+                  {"match": {"question_id":"udFJDEATISe7oQfqnd9Kki"}},
+                    {"match": {"depot_path":"Bio"}}
+                ]
+        }
+      
+    } 
+}
+
+
+// Questionnaire Phy01
+var query_verb_cardinality = {
+    "size":0,
+  "aggs": {
+    "result": {
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "match": {
+                "type": "XContentApi"
+              }
+            },
+            {
+              "match": {
+                "depot_path": "UL-Phy01"
+              }
+            },
+                        {
+              "match": {
+                "depot_path": "UL"
+              }
+            },
+                        {
+              "match": {
+                "depot_path": "Partenaires"
+              }
+            },
+
+            {
+              "exists": {
+                "field": "score_scaled"
+              }
+            }
+            
+          ],
+          "must_not":
+                [
+                  {"match": {"question_id":"qgMx9nWg3feUknCfwecgli"}},
+                  {"match": {"question_id":"pky45GVJlvk0YYYe0wiTxe"}},
+                  {"match": {"question_id":"KDiQi0UNikeZBzySvmA2k"}},
+                  {"match": {"question_id":"Dvj5AqVq4RiIbIFWaJuSud"}},
+                  {"match": {"question_id":"qVTVybVQlxckqCv1EI54h"}},
+                  {"match": {"question_id":"udFJDEATISe7oQfqnd9Kki"}},
+                    {"match": {"depot_path":"Bio"}}
+                ]
+        }
+      },
+"aggs" : {
+        "distinct_verb" : {
+            "cardinality" : {
+              "field" : "verb.raw"
+            }
+        }
+    }
+    }
+  }
+}
+
+var query_verb_terms_agg ={
+    "size":0,
+  "aggs": {
+    "result": {
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "match": {
+                "type": "XContentApi"
+              }
+            },
+            {
+              "match": {
+                "depot_path": "UL-Phy01"
+              }
+            },
+                        {
+              "match": {
+                "depot_path": "UL"
+              }
+            },
+                        {
+              "match": {
+                "depot_path": "Partenaires"
+              }
+            },
+
+            {
+              "exists": {
+                "field": "score_scaled"
+              }
+            }
+            
+          ],
+          "must_not":
+                [
+                  {"match": {"question_id":"qgMx9nWg3feUknCfwecgli"}},
+                  {"match": {"question_id":"pky45GVJlvk0YYYe0wiTxe"}},
+                  {"match": {"question_id":"KDiQi0UNikeZBzySvmA2k"}},
+                  {"match": {"question_id":"Dvj5AqVq4RiIbIFWaJuSud"}},
+                  {"match": {"question_id":"qVTVybVQlxckqCv1EI54h"}},
+                  {"match": {"question_id":"udFJDEATISe7oQfqnd9Kki"}},
+                    {"match": {"depot_path":"Bio"}}
+                ]
+        }
+      },
+ "aggs" : {
+        "genres" : {
+            "terms" : { "field" : "verb.raw" }
+        }
+    }
+    }
+  }
+}

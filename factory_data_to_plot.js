@@ -239,6 +239,7 @@ bar_avg_user_phy.from=0;
 bar_avg_user_phy.size=800;
 
 bar_avg_user_phy.query={
+	"size":0,
   "aggs": {
     "result": {
       "filter": {

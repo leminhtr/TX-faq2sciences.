@@ -153,7 +153,7 @@ function plotBar(class_data){
 
 	// var xmin = jStat.min( class_data.xData);
 	// var xmax= jStat.max( class_data.xData);
-console.log(class_data.size);
+
  var data = [
      {
         //x: class_data.xData,  // Données axe x
@@ -640,49 +640,6 @@ bar_avg_quest_bio.query={
   }
 }
 
-
-/*bar_avg_quest_bio.query={
-    "from":bar_avg_quest_bio.from, "size":bar_avg_quest_bio.size,
-    "query": {
-        "bool": {
-            "must":
-                [
-                    {"match":{ "type":"XContentApi"}},
-                    {"match":{"depot_path": "/Partenaires/UL/UL-Bio"}},
-                    {"exists": {"field": "score_scaled"}}
-                ],
-
-            "must_not":
-                [
-                    {"match": {"question_id":"i6nRY2FhjtlKF4kAuRVlLi"}},
-                    {"match": {"question_id":"j74GTDxCdUh1AhUJbxzOCg"}},
-                    {"match": {"question_id":"Ro8Bn94sH5fiObRDLGMDub"}},
-                    {"match": {"question_id":"AXGE9teKhMdo4j0BsK6x8f"}},
-                    {"match": {"question_id":"AXGE9teKhMdo4j0BsK6x8f"}},
-                    {"match": {"question_id":"XSSBiN8sCL10gnc6XsIUi"}},
-                    {"match": {"question_id":"ImUQEzT8sjgXe0C5WIYD9g"}},
-                    {"match": {"question_id":"QWGy9VVCetknLGk0eUfkvc"}},
-                    
-
-                ]
-        }
-    },
-    "aggregations": {
-        "avg_quest": {
-            "terms": {
-                "field": "question_id.raw",
-                "size":bar_avg_quest_bio.size
-            },
-            "aggregations": {
-                "score_avg": {
-                    "avg": {
-                        "field": "score_scaled"
-                    }
-                }
-            }
-        }
-    }
-};*/
 bar_avg_quest_bio.xLabel="Question de biologie";
 bar_avg_quest_bio.yLabel="Score moyen d'une question";
 bar_avg_quest_bio.title="Score moyen des questions au test de biologie";
@@ -706,13 +663,63 @@ function total_size(response_to_format){
     return nb;
 }
 
+//*****************************************************************************
+
+function plotHist(class_data){
+
+// data1
+var data1 = {
+  x:class_data.yData[0] ,
+  //y: y1,
+  type: "histogram",
+  name:class_data.xLabel[0],
+  opacity:0.5,
+  marker: {
+    color: 'orange',
+  },
+};
+
+// data2
+var data2 = {
+  x: class_data.yData[1],
+  //y: y2,
+  type: "histogram",
+  opacity:0.5,
+  name:class_data.xLabel[1],
+  marker: {
+    color: 'green',
+  },
+};
+
+var data = [data1, data2];
+var layout = {barmode: "overlay",
+				title: class_data.title,
+				xaxis:{title:class_data.xLabel[2]},
+				yaxis:{title:class_data.yLabel},
+				showlegend: true};
+
+Plotly.newPlot(class_data.DOM_id, data, layout, {displaylogo: false}, {showLink: false});
+
+}	//end function plot
 
 
 
+var hist_avg_user= Object.create(CLASS_DATA);
+hist_avg_user.yLabel="Nombre d'étudiants ayant obtenu ce score";
+hist_avg_user.xLabel=[bar_avg_user_phy.title,bar_avg_user_bio.title];
+hist_avg_user.xLabel.push("Score moyen des étudiants");
 
+//hist_avg_user.yLabel=[bar_avg_user_phy.yLabel,bar_avg_user_bio.yLabel];
 
+hist_avg_user.title="Histogramme : Score moyen des étudiants aux tests de physique et de biologie";
+hist_avg_user.DOM_id="hist_avg_user";
 
-
+setTimeout(function()
+	{hist_avg_user.xData=[bar_avg_user_phy.xData,bar_avg_user_bio.xData];
+	hist_avg_user.yData=[bar_avg_user_phy.yData,bar_avg_user_bio.yData];
+	plotHist(hist_avg_user);
+	},
+	6000);
 
 
 

@@ -26,11 +26,6 @@ var dashboard = {
 
 		this.set_yData= function(data_response) {},	// construit l'objet yData different pour chaque graph_data
 
-        this.format_result = function(response_to_format, graph_data){
-        	return dashboard.get_obj_path_value(response_to_format, graph_data.data_path);
-		};	// get format_result
-
-
         this.plotMe = function(graph_data){};
 
     },	//fin constructeur
@@ -249,6 +244,8 @@ var dashboard = {
             vAvg_user_phy.yData.stdev_nb_change=dashboard.calc_unbiaised_stdev_nested(vAvg_user_phy.yData.nb_change);
 
             vAvg_user_phy.yData.avg_score_scaled=dashboard.calc_avg_nested(vAvg_user_phy.yData.pre_score_scaled);
+            vAvg_user_phy.yData.avg_score_scaled.sort();
+            vAvg_user_phy.yData.avg_score_scaled.reverse();
             vAvg_user_phy.yData.stdev_score_scaled=dashboard.calc_unbiaised_stdev_nested(vAvg_user_phy.yData.pre_score_scaled);
 
         };
@@ -256,11 +253,11 @@ var dashboard = {
 		dashboard.send_Xhr(dashboard.readData, vAvg_user_phy);
 
 
-        var vDatas2 = {value:2};
+       // var vDatas2 = {value:2};
 
-        dashboard.graphs.push(new dashboard.Data(vDatas));	// ajout du graph dans a liste de graphs
+        dashboard.graphs.push(vAvg_user_phy);	// ajout du graph dans a liste de graphs
 
-        dashboard.graphs.push(new dashboard.Data(vDatas2));
+        //dashboard.graphs.push(new dashboard.Data(vDatas2));
 
 		}
 
@@ -268,13 +265,13 @@ var dashboard = {
 	};
 
 // fin namespace
-
-dashboard.Data = function(data){	//déclaration d'un constructeur d'objet : new_object= new dashboard.Data(data)
-	this.graph = data;
-};
-dashboard.Data.prototype.buildGraph = function(){	// méthode de classe
-	//
-};
+//
+// dashboard.Data = function(data){	//déclaration d'un constructeur d'objet : new_object= new dashboard.Data(data)
+// 	this.graph = data;
+// };
+// dashboard.Data.prototype.buildGraph = function(){	// méthode de classe
+// 	//
+// };
 //window.onload = dashboard.init;
 
 dashboard.send_Xhr= function(callback, graph_data){ // appel du callback et send query après le listener
@@ -315,31 +312,16 @@ dashboard.readData= function (response_to_format, graph_data){ // traite la rép
     var xtab=[], ytab=[];
 	var data_frame= [];
 
-    var result=graph_data.format_result(response_to_format, graph_data);
     // si query est sur avg_user
     //agreg_avg=response_to_format.aggregations.avg_user.buckets; //=array de [{doc_count:..., key:..., score_avg:{value:...}}, {}, ... ]
 
     graph_data.nb_tot=graph_data.set_nb_tot(response_to_format);
-    // Extrait avg_score et user_id de result
-    for(var i in result)
-    {
-        xtab.push(result[i].key);
-        ytab.push(result[i].score_avg.value);
-        data_frame.push({"x_data" : result[i].key,
-            "y_data" : result[i].score_avg.value});
-    }
 
-    graph_data.set_yData();
+    graph_data.set_yData(response_to_format);
 
-    // graph_data.xData=xtab;
-    // graph_data.yData=ytab;
-    // graph_data.data=data_frame;
     graph_data.query_size=graph_data.yData.length;	// update size of data
 
-    graph_data.mean=jStat.mean(graph_data.yData);
-    graph_data.stdev=jStat.stdev(graph_data.yData, true);	// true : stddev non biaisé
-    //plotBar(user_id,avg_score,graph_data.xLabel,graph_data.yLabel,graph_data.DOM_id,graph_data.title);
-	graph_data.plotMe();
+    graph_data.plotMe(graph_data);
 };
 
 
@@ -369,45 +351,45 @@ dashboard.plotBar= function(graph_data){
     var data = [
         {
             //x: graph_data.xData,  // Données axe x
-            y: graph_data.yData,   // Données axe y
+            y: graph_data.yData.avg_score_scaled,   // Données axe y
             name : graph_data.yLabel,
             type: 'bar'
         }
 
     ];
 
-    var mean_line={
-        name:graph_data.mean_label,
-        type:'lines',
-        x:[0,graph_data.query_size],
-        y:[graph_data.mean,graph_data.mean],
-        marker: {         // marker is an object, valid marker keys: #scatter-marker
-            color: 'rgb(255,140,0)'
-        }
-    }
-    data.push(mean_line);	// add to plotly
-
-    var stdev_upper_line={
-        name:graph_data.stdev_upper_label,
-        type:'lines',
-        x:[0,graph_data.query_size],
-        y:[graph_data.mean+graph_data.stdev,graph_data.mean+graph_data.stdev],	// moyenne + écart type corrigée
-        marker: {         // marker is an object, valid marker keys: #scatter-marker
-            color: 'rgb(51,255,51)'
-        }
-    }
-    data.push(stdev_upper_line);	//add to plotly
-
-    var stdev_lower_line={
-        name:graph_data.stdev_lower_label,
-        type:'lines',
-        x:[0,graph_data.query_size],
-        y:[graph_data.mean-graph_data.stdev,graph_data.mean-graph_data.stdev],	// moyenne - écart type corrigée
-        marker: {         // marker is an object, valid marker keys: #scatter-marker
-            color: 'rgb(255,51,51)'
-        }
-    }
-    data.push(stdev_lower_line);
+    // var mean_line={
+    //     name:graph_data.mean_label,
+    //     type:'lines',
+    //     x:[0,graph_data.query_size],
+    //     y:[graph_data.mean,graph_data.mean],
+    //     marker: {         // marker is an object, valid marker keys: #scatter-marker
+    //         color: 'rgb(255,140,0)'
+    //     }
+    // }
+    // data.push(mean_line);	// add to plotly
+    //
+    // var stdev_upper_line={
+    //     name:graph_data.stdev_upper_label,
+    //     type:'lines',
+    //     x:[0,graph_data.query_size],
+    //     y:[graph_data.mean+graph_data.stdev,graph_data.mean+graph_data.stdev],	// moyenne + écart type corrigée
+    //     marker: {         // marker is an object, valid marker keys: #scatter-marker
+    //         color: 'rgb(51,255,51)'
+    //     }
+    // }
+    // data.push(stdev_upper_line);	//add to plotly
+    //
+    // var stdev_lower_line={
+    //     name:graph_data.stdev_lower_label,
+    //     type:'lines',
+    //     x:[0,graph_data.query_size],
+    //     y:[graph_data.mean-graph_data.stdev,graph_data.mean-graph_data.stdev],	// moyenne - écart type corrigée
+    //     marker: {         // marker is an object, valid marker keys: #scatter-marker
+    //         color: 'rgb(255,51,51)'
+    //     }
+    // }
+    // data.push(stdev_lower_line);
 
 //  var avgObj={
 //   name: 'average organization',
@@ -495,10 +477,12 @@ dashboard.calc_unbiaised_stdev_nested= function(tab){	//= sqrt( (1/n-1)  * (sum(
     return stdev;
 };
 
+dashboard.sort_by_key = function(graph_data, key){// construit le data frame pour effectuer des tris par clé
 
+
+};
 
 ////
-window.addEventListener("load", dashboard.query);
 window.addEventListener("load", dashboard.init);
 
 

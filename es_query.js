@@ -435,6 +435,7 @@ var query_verb_terms_agg ={
     user2[{q1.max_time, q1.min_time},{q1.max_time, q1.min_time}, ...],
 ]
 */
+var avg_user_phy=
 {
     "query": {
         "bool": {
@@ -490,7 +491,7 @@ var query_verb_terms_agg ={
                 "size": 800
             },
             "aggs": {
-                "question_id": {
+                "questions": {
                     "terms": {
                         "field": "question_id.raw",
                         "size": 50
@@ -535,10 +536,10 @@ var query_verb_terms_agg ={
             }
         }
     }
-}
+};
 
 
-
+var avg_user_bio=
 {
     "query": {
         "bool": {
@@ -588,7 +589,7 @@ var query_verb_terms_agg ={
     },
     "size": 0,
     "aggs": {
-        "users": {
+        "questions": {
             "terms": {
                 "field": "question.raw",
                 "size": 50
@@ -638,7 +639,7 @@ var query_verb_terms_agg ={
             }
         }
     }
-}
+};
 
 /* Query avec sous aggregations :
 [

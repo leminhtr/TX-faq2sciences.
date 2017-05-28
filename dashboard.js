@@ -2,7 +2,7 @@ var dashboard = {
 	graphs : [],	// graphs list
 
 	// Constructeur de classe graph_data
-    graph_data : function  (pQuery_body, pxLabel, pyLabel, pTitle, pDOM_id, pQuery_size, pMean_label, pStdev_label, pData_path){
+    graph_data : function  (pQuery_body, pxLabel, pyLabel, pTitle, pDOM_id, pMean_label, pStdev_label, pData_path){
 		this.query_body=pQuery_body;	// corps de la query
 		this.xData=[];	// data x
 		this.yData={};	// data y	: objet {attribut : data1, attribut2: data2, ...} => Different pour chaque graph
@@ -12,27 +12,32 @@ var dashboard = {
 		this.title=pTitle;		// titre
 		this.DOM_id=pDOM_id;	// DOM id
 		this.from=0;			// debut
-		this.query_size=pQuery_size;	// taille de la requête : objet {attribut : sizeof_data, attribut2: sizeof_data, ...} => Different pour chaque graph
+		this.query_size={};	// taille de la requête : objet {attribut : sizeof_data, attribut2: sizeof_data, ...} => Different pour chaque graph
+        this.yMean=0;
 		this.yMean_label= pMean_label;	// label yMean
+        this.yStdev=0;
 		this.yStdev_label= pStdev_label;	//label yStdev
 		this.nb_tot= 0;	// à voir si utile
-		this.data_path=pData_path,	// objet {attribut : path_to_data, attribut2: path_to_data, ...} => Different pour chaque graph
+		this.data_path=pData_path;	// objet {attribut : path_to_data, attribut2: path_to_data, ...} => Different pour chaque graph
 
         this.set_nb_tot=function(response_to_format){
             this.query_size=response_to_format.hits.total; //=array de [{doc_count:..., key:..., score_avg:{value:...}}, {}, ... ]
             return this.query_size;
-        },
+        };
         //update_query_from= function(new_from){this.query.from=new_from};
 
-		this.set_yData= function(data_response) {},	// construit l'objet yData different pour chaque graph_data
+		this.set_yData= function(data_response) {};	// construit l'objet yData different pour chaque graph_data
+
+        this.data_frame=function(){};
 
         this.plotMe = function(graph_data){};
+
 
     },	//fin constructeur
 
 
 
-	query_thibault : function(){
+	query_build_thibault : function(){
 		var aggQId =  {"question_id":{"terms" : {"field" : "question_id.raw","size":50}}};
 		var aggUser =  {"user":{"terms" : {"field" : "user.raw","size":800}}};
 		vQUery = {};
@@ -155,7 +160,6 @@ var dashboard = {
 			"Score moyen d'un étudiant",
 			"Score moyen d'un étudiant au test de physique",
 			"bar_avg_user_phy",
-			{nb_user:800, nb_quest:40},	// inutile si déjà dans query ?
 			"Score total moyen des étudiants",
 			" l'écart type",
 //yData :			//{users:[], questions:[], nb_change_tot:0, nb_change:[], max_time:[], min_time:[], score_scaled:[]},
@@ -170,25 +174,28 @@ var dashboard = {
 			score_scaled:".fields.score_scaled"}	//score de user à une question
 			);
 
-		vAvg_user_phy.plotMe=dashboard.plotBar;
+		    vAvg_user_phy.plotMe=dashboard.plotBar;
+		    vAvg_user_phy.query_size={nb_user:800, nb_quest:40};	// inutile si déjà dans query ?
+                                                                    // variable à remettre dans constructeur ?
+
+            vAvg_user_phy.yData ={	//nb changement, temps de réponse, score
+            //users:[],	// liste des users
+            questions:[],	// listes des questions répondue pour chaque user
+            nb_change_tot:[],	// nombre de changement de réponses totales sur un questionnaire pour chaque user
+            nb_change:[],	// nombre de changement de réponses pour chaque question répondue, pour chaque user
+            avg_nb_change:[],	// moyenne de changement de réponse par user
+            stdev_nb_change:[],	// écart type de changement de réponse apr user
+            max_time:[],	// temps de la dernière réponse pour chaque question répondue, pour chaque user
+            min_time:[],	//temps de la première réponse pour chaque question répondue, pour chaque user
+            delta_time:[],	//temps de réponse pour chaque question répondue, pour chaque user
+            avg_time:[],		//temps moyen de réponse pour chaque question répondue, pour chaque user
+            stdev_time:[],	//écart type de changement de réponse par uset
+            pre_score_scaled:[],	//score de chaque question répondue, pour chaque user
+            avg_score_scaled:[],	//score moyen d'un questionnaire, pour chaque user
+            stdev_score_scaled:[]	//score moyen d'un questionnaire, pour chaque user
+        };
 
 		vAvg_user_phy.set_yData= function(data_response) {
-			vAvg_user_phy.yData ={	//nb changement, temps de réponse, score
-				//users:[],	// liste des users
-				questions:[],	// listes des questions répondue pour chaque user
-				nb_change_tot:[],	// nombre de changement de réponses totales sur un questionnaire pour chaque user
-				nb_change:[],	// nombre de changement de réponses pour chaque question répondue, pour chaque user
-				avg_nb_change:[],	// moyenne de changement de réponse par user
-				stdev_nb_change:[],	// écart type de changement de réponse apr user
-				max_time:[],	// temps de la dernière réponse pour chaque question répondue, pour chaque user
-				min_time:[],	//temps de la première réponse pour chaque question répondue, pour chaque user
-				delta_time:[],	//temps de réponse pour chaque question répondue, pour chaque user
-				avg_time:[],		//temps moyen de réponse pour chaque question répondue, pour chaque user
-				stdev_time:[],	//écart type de changement de réponse par uset
-				pre_score_scaled:[],	//score de chaque question répondue, pour chaque user
-				avg_score_scaled:[],	//score moyen d'un questionnaire, pour chaque user
-				stdev_score_scaled:[]	//score moyen d'un questionnaire, pour chaque user
-			};
 
 			//DATA.aggregations.users.buckets[]
             var toFormat_data=dashboard.get_obj_path_value(data_response,vAvg_user_phy.data_path.users);
@@ -243,19 +250,31 @@ var dashboard = {
             vAvg_user_phy.yData.avg_nb_change=dashboard.calc_avg_nested(vAvg_user_phy.yData.nb_change);
             vAvg_user_phy.yData.stdev_nb_change=dashboard.calc_unbiaised_stdev_nested(vAvg_user_phy.yData.nb_change);
 
+           // vAvg_user_phy.yData.pre_score_scaled.forEach(function(temp){alert(temp);});
             vAvg_user_phy.yData.avg_score_scaled=dashboard.calc_avg_nested(vAvg_user_phy.yData.pre_score_scaled);
             vAvg_user_phy.yData.avg_score_scaled.sort();
             vAvg_user_phy.yData.avg_score_scaled.reverse();
             vAvg_user_phy.yData.stdev_score_scaled=dashboard.calc_unbiaised_stdev_nested(vAvg_user_phy.yData.pre_score_scaled);
 
+            vAvg_user_phy.yMean=dashboard.calc_avg(vAvg_user_phy.yData.avg_score_scaled);
+            vAvg_user_phy.yStdev=dashboard.calc_unbiaised_stdev(vAvg_user_phy.yData.avg_score_scaled);  //= écart-type de la moyenne des score par utilisateurs
+                                                                                            // != écart type des écarts type du score au questionnaire d'un user
+
+            vAvg_user_phy.query_size.nb_user=vAvg_user_phy.xData.length;
+
+
+
+
         };
 
-		dashboard.send_Xhr(dashboard.readData, vAvg_user_phy);
+        dashboard.send_Xhr(dashboard.readData, vAvg_user_phy);
+
+        dashboard.graphs.push(vAvg_user_phy);	// ajout du graph dans a liste de graphs
+
 
 
        // var vDatas2 = {value:2};
 
-        dashboard.graphs.push(vAvg_user_phy);	// ajout du graph dans a liste de graphs
 
         //dashboard.graphs.push(new dashboard.Data(vDatas2));
 
@@ -289,7 +308,7 @@ dashboard.send_Xhr= function(callback, graph_data){ // appel du callback et send
 
         }
         else {
-            console.log("not ready yet")
+            console.log("not ready yet");
         }
     };
 
@@ -304,16 +323,11 @@ dashboard.send_Xhr= function(callback, graph_data){ // appel du callback et send
 dashboard.get_obj_path_value = function(obj, path){	//get value of object path
     for (var i=0, path=path.split('.'), len=path.length; i<len; i++){
         obj = obj[path[i]];
-    };
+    }
     return obj;
 };
 
 dashboard.readData= function (response_to_format, graph_data){ // traite la réponse Xhr
-    var xtab=[], ytab=[];
-	var data_frame= [];
-
-    // si query est sur avg_user
-    //agreg_avg=response_to_format.aggregations.avg_user.buckets; //=array de [{doc_count:..., key:..., score_avg:{value:...}}, {}, ... ]
 
     graph_data.nb_tot=graph_data.set_nb_tot(response_to_format);
 
@@ -326,7 +340,6 @@ dashboard.readData= function (response_to_format, graph_data){ // traite la rép
 
 
 dashboard.plotBar= function(graph_data){
-    var xtab=[], ytab=[];
     //graph_data.xData.sort();
     //graph_data.yData.sort();
     //graph_data.yData.reverse();
@@ -358,39 +371,39 @@ dashboard.plotBar= function(graph_data){
 
     ];
 
-    // var mean_line={
-    //     name:graph_data.mean_label,
-    //     type:'lines',
-    //     x:[0,graph_data.query_size],
-    //     y:[graph_data.mean,graph_data.mean],
-    //     marker: {         // marker is an object, valid marker keys: #scatter-marker
-    //         color: 'rgb(255,140,0)'
-    //     }
-    // }
-    // data.push(mean_line);	// add to plotly
-    //
-    // var stdev_upper_line={
-    //     name:graph_data.stdev_upper_label,
-    //     type:'lines',
-    //     x:[0,graph_data.query_size],
-    //     y:[graph_data.mean+graph_data.stdev,graph_data.mean+graph_data.stdev],	// moyenne + écart type corrigée
-    //     marker: {         // marker is an object, valid marker keys: #scatter-marker
-    //         color: 'rgb(51,255,51)'
-    //     }
-    // }
-    // data.push(stdev_upper_line);	//add to plotly
-    //
-    // var stdev_lower_line={
-    //     name:graph_data.stdev_lower_label,
-    //     type:'lines',
-    //     x:[0,graph_data.query_size],
-    //     y:[graph_data.mean-graph_data.stdev,graph_data.mean-graph_data.stdev],	// moyenne - écart type corrigée
-    //     marker: {         // marker is an object, valid marker keys: #scatter-marker
-    //         color: 'rgb(255,51,51)'
-    //     }
-    // }
-    // data.push(stdev_lower_line);
+    var mean_line={
+        name:graph_data.yMean_label,
+        type:'lines',
+        x:[0,graph_data.yData.avg_score_scaled.length],
+        y:[graph_data.yMean,graph_data.yMean],	// moyenne - écart type corrigée
+        marker: {         // marker is an object, valid marker keys: #scatter-marker
+            color: 'rgb(255,140,0)'
+        }
+    };
+    data.push(mean_line);	// add to plotly
 
+    var stdev_upper_line={
+        name:graph_data.yMean_label + ' +' + graph_data.yStdev_label,
+        type:'lines',
+        x:[0,graph_data.yData.avg_score_scaled.length],
+        y:[graph_data.yMean+graph_data.yStdev,graph_data.yMean+graph_data.yStdev],	// moyenne - écart type corrigée
+        marker: {         // marker is an object, valid marker keys: #scatter-marker
+            color: 'rgb(51,255,51)'
+        }
+    };
+    data.push(stdev_upper_line);	//add to plotly
+
+    var stdev_lower_line={
+        name:graph_data.yMean_label + ' -' + graph_data.yStdev_label,
+        type:'lines',
+        x:[0,graph_data.yData.avg_score_scaled.length],
+        y:[graph_data.yMean-graph_data.yStdev,graph_data.yMean-graph_data.yStdev],	// moyenne - écart type corrigée
+        marker: {         // marker is an object, valid marker keys: #scatter-marker
+            color: 'rgb(255,51,51)'
+        }
+    }
+    data.push(stdev_lower_line);
+//
 //  var avgObj={
 //   name: 'average organization',
 //   type: 'scatter',
@@ -421,7 +434,7 @@ dashboard.plotBar= function(graph_data){
 
     Plotly.newPlot(graph_data.DOM_id, data, layout, {displaylogo: false}, {showLink: false});
 
-}//end function plotBar
+};//end function plotBar
 
 
 dashboard.calc_delta_time= function(tab1, tab2){
@@ -456,6 +469,17 @@ dashboard.calc_avg_nested= function(tab){
     return avg_nested;
 };
 
+dashboard.calc_avg= function(tab){
+    var sum=0;
+    temp=tab;
+    temp.forEach(function(temp){
+        sum+=temp;
+    });
+
+    var n=temp.length;
+    return sum/n;
+};
+
 dashboard.calc_unbiaised_stdev_nested= function(tab){	//= sqrt( (1/n-1)  * (sum(x_i^2) - n* avg^2))
     var avg=dashboard.calc_avg_nested(tab);
 	var stdev=[];
@@ -475,6 +499,20 @@ dashboard.calc_unbiaised_stdev_nested= function(tab){	//= sqrt( (1/n-1)  * (sum(
 
     }
     return stdev;
+};
+
+dashboard.calc_unbiaised_stdev= function(tab){	//= sqrt( (1/n-1)  * (sum(x_i^2) - n* avg^2))
+    var avg=dashboard.calc_avg(tab);
+    var sum_squared=0;
+
+    tab.forEach(function(tab){
+        sum_squared+=Math.pow(tab,2);
+    });
+
+    var n=tab.length;
+    var unbiaised_Var=(sum_squared-n*Math.pow(avg,2))/(n-1);
+
+    return Math.sqrt((unbiaised_Var));
 };
 
 dashboard.sort_by_key = function(graph_data, key){// construit le data frame pour effectuer des tris par clé

@@ -152,6 +152,109 @@ var dashboard = {
                     }
                 }
             }
+        },
+        avg_user_bio:
+        {
+            "query": {
+                "bool": {
+                    "must": [
+                        {
+                            "terms": {
+                                "_index": [
+                                    "faq2sciencesdistrib-2016.09.13",
+                                    "faq2sciencesdistrib-2016.09.14",
+                                    "faq2sciencesdistrib-2016.09.15",
+                                    "faq2sciencesdistrib-2016.09.16",
+                                    "faq2sciencesdistrib-2016.09.19",
+                                    "faq2sciencesdistrib-2016.09.20",
+                                    "faq2sciencesdistrib-2016.09.21",
+                                    "faq2sciencesdistrib-2016.09.22",
+                                    "faq2sciencesdistrib-2016.09.24",
+                                    "faq2sciencesdistrib-2016.09.26"
+                                ]
+                            }
+                        },
+                        {
+                            "term": {
+                                "depot_path.raw": "/Partenaires/UL/UL-Bio"
+                            }
+                        },
+                        {
+                            "term": {
+                                "verb.raw": "scored"
+                            }
+                        }
+                    ],
+                    "must_not": [
+                        {
+                            "terms": {
+                                "question_id.raw": [
+                                    "i6nRY2FhjtlKF4kAuRVlLi",
+                                    "j74GTDxCdUh1AhUJbxzOCg",
+                                    "Ro8Bn94sH5fiObRDLGMDub",
+                                    "AXGE9teKhMdo4j0BsK6x8f",
+                                    "BdYLqQ15ObfDNWH4r8ES1d",
+                                    "XSSBiN8sCL10gnc6XsIUi",
+                                    "ImUQEzT8sjgXe0C5WIYD9g",
+                                    "QWGy9VVCetknLGk0eUfkvc",
+                                    "LWF7Tquh7XgWIQLImXgie",
+                                    "XSSBiN8sCL10gnc6XsIUi"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            "size": 0,
+            "aggs": {
+                "users": {
+                    "terms": {
+                        "field": "user.raw",
+                        "size": 800
+                    },
+                    "aggs": {
+                        "questions": {
+                            "terms": {
+                                "field": "question_id.raw",
+                                "size": 300
+                            },
+                            "aggs": {
+                                "max_time": {
+                                    "top_hits": {
+                                        "size": 1,
+                                        "fields": [
+                                            "timestamp",
+                                            "score_scaled"
+                                        ],
+                                        "sort": [
+                                            {
+                                                "timestamp": {
+                                                    "order": "desc"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "min_time": {
+                                    "top_hits": {
+                                        "size": 1,
+                                        "fields": [
+                                            "timestamp"
+                                        ],
+                                        "sort": [
+                                            {
+                                                "timestamp": {
+                                                    "order": "asc"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }},
 
 	init : function(){	// mettre instance dans fonction
@@ -264,26 +367,195 @@ var dashboard = {
 
 
 
-
-        };
+        }; // function phy
 
         dashboard.send_Xhr(dashboard.readData, vAvg_user_phy);
 
         dashboard.graphs.push(vAvg_user_phy);	// ajout du graph dans a liste de graphs
 
+        //***************************** USER BIO *********************************************
+
+        var vAvg_user_bio = new dashboard.graph_data(dashboard.query_list.avg_user_bio,
+            "étudiant",
+            "Score moyen d'un étudiant",
+            "Score moyen d'un étudiant au test de biologie",
+            "bar_avg_user_bio",
+            "Score total moyen des étudiants",
+            " l'écart type",
+//yData :			//{users:[], questions:[], nb_change_tot:0, nb_change:[], max_time:[], min_time:[], score_scaled:[]},
+            {users:"aggregations.users.buckets",// = tableau de .key (user_id)
+                nb_change_tot:".doc_count",
+                questions:".questions.buckets",	// = tableau de .key (question_id)
+                nb_change_per_quest:".doc_count",
+                max_time:".max_time.hits.hits",	// .max_time.hits.hits[0].fields : prendre 1ère  valeur du tableau hits.hits[]
+                max_time_val:".fields.max_time",// temps où user à terminé une question
+                min_time:".min_time.hits.hits",	//.min_time.hits.hits[0].fields : prendre 1ère  valeur du tableau hits.hits[]
+                min_time_val:".fields.timestamp",	// temps où user à commencé une question
+                score_scaled:".fields.score_scaled"}	//score de user à une question
+        );
+
+        vAvg_user_bio.plotMe=dashboard.plotBar;
+        vAvg_user_bio.query_size={nb_user:800, nb_quest:300};	// inutile si déjà dans query ?
+        // variable à remettre dans constructeur ?
+
+        vAvg_user_bio.yData ={	//nb changement, temps de réponse, score
+            //users:[],	// liste des users
+            questions:[],	// listes des questions répondue pour chaque user
+            nb_change_tot:[],	// nombre de changement de réponses totales sur un questionnaire pour chaque user
+            nb_change:[],	// nombre de changement de réponses pour chaque question répondue, pour chaque user
+            avg_nb_change:[],	// moyenne de changement de réponse par user
+            stdev_nb_change:[],	// écart type de changement de réponse apr user
+            max_time:[],	// temps de la dernière réponse pour chaque question répondue, pour chaque user
+            min_time:[],	//temps de la première réponse pour chaque question répondue, pour chaque user
+            delta_time:[],	//temps de réponse pour chaque question répondue, pour chaque user
+            avg_time:[],		//temps moyen de réponse pour chaque question répondue, pour chaque user
+            stdev_time:[],	//écart type de changement de réponse par uset
+            pre_score_scaled:[],	//score de chaque question répondue, pour chaque user
+            avg_score_scaled:[],	//score moyen d'un questionnaire, pour chaque user
+            stdev_score_scaled:[]	//score moyen d'un questionnaire, pour chaque user
+        };
+
+        vAvg_user_bio.set_yData= function(data_response) {
+
+            //DATA.aggregations.users.buckets[]
+            var toFormat_data=dashboard.get_obj_path_value(data_response,vAvg_user_bio.data_path.users);
+
+            for(var i=0, nb_user=toFormat_data.length; i<nb_user;i++){	// pour chaque user faire
+                var data= toFormat_data[i];
+
+                //DATA.aggregations.users.buckets[].key = user_id
+                vAvg_user_bio.xData[i]=data.key;
+
+                //DATA.aggregations.users.buckets[].question_id = nb tentatives totales de user
+                vAvg_user_bio.yData.nb_change_tot[i]=data.doc_count;
+
+                //DATA.aggregations.users.buckets[].length = nb questions répondu par user
+                var nb_quest= data.questions.buckets.length;
+
+                var temp_questions=[], temp_nb_change=[], temp_max_time=[], temp_min_time=[], temp_delta_time=[], temp_pre_score_scaled=[];
+
+                for(var j=0; j<nb_quest;j++){	// pour chaque question répondu par user faire
+                    //DATA.aggregations.questions.buckets[].questions.buckets[].
+                    var nested_data=data.questions.buckets[j];
+
+                    //DATA.aggregations.questions.buckets[].questions.buckets[].doc_count = nb de changement de user pour une question
+                    //vAvg_user_bio.yData.nb_change[i][j]=nested_data.doc_count;
+                    temp_nb_change.push(nested_data.doc_count);
+
+                    //DATA.aggregations.questions.buckets[].questions.buckets[].max_time.hits.hits[0].fields.timestamp[0] = temps de la dernière réponse à une question
+                    //vAvg_user_bio.yData.max_time[i][j]=nested_data.max_time.hits.hits[0].fields.timestamp[0];
+                    temp_max_time.push(nested_data.max_time.hits.hits[0].fields.timestamp[0]);
+
+                    //DATA.aggregations.questions.buckets[].questions.buckets[].min_time.hits.hits[0].fields.timestamp[0] = temps de la première réponse à une question
+                    //vAvg_user_bio.yData.min_time[i][j]=nested_data.min_time.hits.hits[0].fields.timestamp[0];
+                    temp_min_time=nested_data.min_time.hits.hits[0].fields.timestamp[0];
+
+                    //DATA.aggregations.questions.buckets[].questions.buckets[].max_time.hits.hits[0].fields.timestamp[0] = score de la dernière réponse à une question
+                    //vAvg_user_bio.yData.pre_score_scaled[i][j]=nested_data.max_time.hits.hits[0].fields.score_scaled[0];
+                    temp_pre_score_scaled.push(nested_data.max_time.hits.hits[0].fields.score_scaled[0]);
+
+                }
+                vAvg_user_bio.yData.questions.push(temp_questions);
+                vAvg_user_bio.yData.nb_change.push(temp_nb_change);
+                vAvg_user_bio.yData.max_time.push(temp_max_time);
+                vAvg_user_bio.yData.min_time.push(temp_min_time);
+                vAvg_user_bio.yData.delta_time.push(temp_delta_time);
+                vAvg_user_bio.yData.pre_score_scaled.push(temp_pre_score_scaled);
+            }
+
+            vAvg_user_bio.yData.delta_time=dashboard.calc_delta_time(vAvg_user_bio.yData.max_time,vAvg_user_bio.yData.min_time); //delta_time= max_time-min_time
+            vAvg_user_bio.yData.avg_time=dashboard.calc_avg_nested(vAvg_user_bio.yData.delta_time);
+            vAvg_user_bio.yData.stdev_time=dashboard.calc_unbiaised_stdev_nested(vAvg_user_bio.yData.delta_time);
+
+            vAvg_user_bio.yData.avg_nb_change=dashboard.calc_avg_nested(vAvg_user_bio.yData.nb_change);
+            vAvg_user_bio.yData.stdev_nb_change=dashboard.calc_unbiaised_stdev_nested(vAvg_user_bio.yData.nb_change);
+
+            // vAvg_user_bio.yData.pre_score_scaled.forEach(function(temp){alert(temp);});
+            vAvg_user_bio.yData.avg_score_scaled=dashboard.calc_avg_nested(vAvg_user_bio.yData.pre_score_scaled);
+            vAvg_user_bio.yData.avg_score_scaled.sort();
+            vAvg_user_bio.yData.avg_score_scaled.reverse();
+            vAvg_user_bio.yData.stdev_score_scaled=dashboard.calc_unbiaised_stdev_nested(vAvg_user_bio.yData.pre_score_scaled);
+
+            vAvg_user_bio.yMean=dashboard.calc_avg(vAvg_user_bio.yData.avg_score_scaled);
+            vAvg_user_bio.yStdev=dashboard.calc_unbiaised_stdev(vAvg_user_bio.yData.avg_score_scaled);  //= écart-type de la moyenne des score par utilisateurs
+            // != écart type des écarts type du score au questionnaire d'un user
+
+            vAvg_user_bio.query_size.nb_user=vAvg_user_bio.xData.length;
 
 
-       // var vDatas2 = {value:2};
+
+        }; // function phy
+
+        dashboard.send_Xhr(dashboard.readData, vAvg_user_bio);
+
+        dashboard.graphs.push(vAvg_user_bio);	// ajout du graph dans a liste de graphs
 
 
-        //dashboard.graphs.push(new dashboard.Data(vDatas2));
-
-		}
 
 
-	};
 
-// fin namespace
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		}//fin init()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	}; // fin namespace
 //
 // dashboard.Data = function(data){	//déclaration d'un constructeur d'objet : new_object= new dashboard.Data(data)
 // 	this.graph = data;

@@ -363,6 +363,8 @@ var dashboard = {
 
 			// nombre moyen de changement de réponse par étudiant sur tout un questionnaire
             vAvg_user_phy.yData.avg_nb_change=dashboard.calc_avg_nested(vAvg_user_phy.yData.nb_change);
+            vAvg_user_phy.yData.avg_nb_change.sort();
+            vAvg_user_phy.yData.avg_nb_change.reverse();
             //console.log(vAvg_user_phy.yData.avg_nb_change);
             vAvg_user_phy.yData.stdev_nb_change=dashboard.calc_unbiaised_stdev_nested(vAvg_user_phy.yData.nb_change);
 

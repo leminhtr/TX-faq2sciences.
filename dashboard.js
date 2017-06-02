@@ -19,6 +19,7 @@ var dashboard = {
 		this.yStdev_label= pStdev_label;	//label yStdev
 		this.nb_tot= 0;	// à voir si utile
 		this.data_path=pData_path;	// objet {attribut : path_to_data, attribut2: path_to_data, ...} => Different pour chaque graph
+        this.tab_to_plot=[]; // liste des yData à afficher
 
         this.set_nb_tot=function(response_to_format){
             this.query_size=response_to_format.hits.total; //=array de [{doc_count:..., key:..., score_avg:{value:...}}, {}, ... ]
@@ -261,7 +262,7 @@ var dashboard = {
 		var vAvg_user_phy = new dashboard.graph_data(dashboard.query_list.avg_user_phy,
 			"étudiant",
 			"Score moyen d'un étudiant",
-			"Score moyen d'un étudiant au test de physique",
+			"Score moyen d'un étudiant au questionnaire de physique",
 			"bar_avg_user_phy",
 			"Score total moyen des étudiants",
 			" l'écart type",
@@ -331,7 +332,7 @@ var dashboard = {
 
                     //DATA.aggregations.questions.buckets[].questions.buckets[].min_time.hits.hits[0].fields.timestamp[0] = temps de la première réponse à une question
             		//vAvg_user_phy.yData.min_time[i][j]=nested_data.min_time.hits.hits[0].fields.timestamp[0];
-            		temp_min_time=nested_data.min_time.hits.hits[0].fields.timestamp[0];
+            		temp_min_time.push(nested_data.min_time.hits.hits[0].fields.timestamp[0]);
 
                     //DATA.aggregations.questions.buckets[].questions.buckets[].max_time.hits.hits[0].fields.timestamp[0] = score de la dernière réponse à une question
             		//vAvg_user_phy.yData.pre_score_scaled[i][j]=nested_data.max_time.hits.hits[0].fields.score_scaled[0];
@@ -340,20 +341,32 @@ var dashboard = {
 				}
 				vAvg_user_phy.yData.questions.push(temp_questions);
 				vAvg_user_phy.yData.nb_change.push(temp_nb_change);
+				//console.log(temp_nb_change);
 				vAvg_user_phy.yData.max_time.push(temp_max_time);
 				vAvg_user_phy.yData.min_time.push(temp_min_time);
-				vAvg_user_phy.yData.delta_time.push(temp_delta_time);
+
+				//vAvg_user_phy.yData.delta_time.push(temp_delta_time);
+                //console.log(temp_delta_time);
 				vAvg_user_phy.yData.pre_score_scaled.push(temp_pre_score_scaled);
 			}
 
+
+			// temps de réponse d'un étudiant pour chaque question d'un questionnaire
 			vAvg_user_phy.yData.delta_time=dashboard.calc_delta_time(vAvg_user_phy.yData.max_time,vAvg_user_phy.yData.min_time); //delta_time= max_time-min_time
+            //console.log(vAvg_user_phy.yData.delta_time);
+            // moyenne du temps de réponse d'un étudiant sur tout un questionnaire
 			vAvg_user_phy.yData.avg_time=dashboard.calc_avg_nested(vAvg_user_phy.yData.delta_time);
+			//vAvg_user_phy.yData.avg_time.sort();
+			//vAvg_user_phy.yData.avg_time.reverse();
+            //console.log(vAvg_user_phy.yData.avg_time);
 			vAvg_user_phy.yData.stdev_time=dashboard.calc_unbiaised_stdev_nested(vAvg_user_phy.yData.delta_time);
 
+			// nombre moyen de changement de réponse par étudiant sur tout un questionnaire
             vAvg_user_phy.yData.avg_nb_change=dashboard.calc_avg_nested(vAvg_user_phy.yData.nb_change);
+            //console.log(vAvg_user_phy.yData.avg_nb_change);
             vAvg_user_phy.yData.stdev_nb_change=dashboard.calc_unbiaised_stdev_nested(vAvg_user_phy.yData.nb_change);
 
-           // vAvg_user_phy.yData.pre_score_scaled.forEach(function(temp){alert(temp);});
+            // score moyen d'un utilisateur sur tout un questionnaire
             vAvg_user_phy.yData.avg_score_scaled=dashboard.calc_avg_nested(vAvg_user_phy.yData.pre_score_scaled);
             vAvg_user_phy.yData.avg_score_scaled.sort();
             vAvg_user_phy.yData.avg_score_scaled.reverse();
@@ -367,7 +380,15 @@ var dashboard = {
 
 
 
-        }; // function phy
+        }; // function set yData phy
+
+        vAvg_user_phy.tab_to_plot=[ {DOM_id:"bar_avg_user_phy", yData:"avg_score_scaled",xlabel:"étudiant",ylabel:"Score moyen d'un étudiant au questionnaire",
+                                    title:"Score moyen d'un étudiant au questionnaire de physique"},
+                                    {DOM_id:"bar_avg_user_phy_nb_change", yData:"avg_nb_change", xlabel:"étudiant", ylabel:"Nombre moyen de changements de réponse au questionnaire",
+                                    title:"Nombre moyen de changements de réponse par étudiant au questionnaire de physique"},
+                                    {DOM_id:"bar_avg_user_phy_deltaT", yData:"avg_time",xlabel:"étudiant", ylabel:"Temps moyen de réponse au questionnaire (en seconde)",
+                                    title:"Temps moyen de réponse au questionnaire de physique par étudiant (en seconde)"}
+                                   ];
 
         dashboard.send_Xhr(dashboard.readData, vAvg_user_phy);
 
@@ -378,7 +399,7 @@ var dashboard = {
         var vAvg_user_bio = new dashboard.graph_data(dashboard.query_list.avg_user_bio,
             "étudiant",
             "Score moyen d'un étudiant",
-            "Score moyen d'un étudiant au test de biologie",
+            "Score moyen d'un étudiant au questionnaire de biologie",
             "bar_avg_user_bio",
             "Score total moyen des étudiants",
             " l'écart type",
@@ -448,7 +469,7 @@ var dashboard = {
 
                     //DATA.aggregations.questions.buckets[].questions.buckets[].min_time.hits.hits[0].fields.timestamp[0] = temps de la première réponse à une question
                     //vAvg_user_bio.yData.min_time[i][j]=nested_data.min_time.hits.hits[0].fields.timestamp[0];
-                    temp_min_time=nested_data.min_time.hits.hits[0].fields.timestamp[0];
+                    temp_min_time.push(nested_data.min_time.hits.hits[0].fields.timestamp[0]);
 
                     //DATA.aggregations.questions.buckets[].questions.buckets[].max_time.hits.hits[0].fields.timestamp[0] = score de la dernière réponse à une question
                     //vAvg_user_bio.yData.pre_score_scaled[i][j]=nested_data.max_time.hits.hits[0].fields.score_scaled[0];
@@ -492,65 +513,7 @@ var dashboard = {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 		}//fin init()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -611,7 +574,7 @@ dashboard.readData= function (response_to_format, graph_data){ // traite la rép
 };
 
 
-dashboard.plotBar= function(graph_data){
+dashboard.plotBar= function(graph_data, tab_to_plot){
     //graph_data.xData.sort();
     //graph_data.yData.sort();
     //graph_data.yData.reverse();
@@ -633,48 +596,52 @@ dashboard.plotBar= function(graph_data){
     // var xmin = jStat.min( graph_data.xData);
     // var xmax= jStat.max( graph_data.xData);
 
-    var data = [
-        {
-            //x: graph_data.xData,  // Données axe x
-            y: graph_data.yData.avg_score_scaled,   // Données axe y
-            name : graph_data.yLabel,
-            type: 'bar'
-        }
 
-    ];
 
-    var mean_line={
-        name:graph_data.yMean_label,
-        type:'lines',
-        x:[0,graph_data.yData.avg_score_scaled.length],
-        y:[graph_data.yMean,graph_data.yMean],	// moyenne - écart type corrigée
-        marker: {         // marker is an object, valid marker keys: #scatter-marker
-            color: 'rgb(255,140,0)'
-        }
-    };
-    data.push(mean_line);	// add to plotly
 
-    var stdev_upper_line={
-        name:graph_data.yMean_label + ' +' + graph_data.yStdev_label,
-        type:'lines',
-        x:[0,graph_data.yData.avg_score_scaled.length],
-        y:[graph_data.yMean+graph_data.yStdev,graph_data.yMean+graph_data.yStdev],	// moyenne - écart type corrigée
-        marker: {         // marker is an object, valid marker keys: #scatter-marker
-            color: 'rgb(51,255,51)'
-        }
-    };
-    data.push(stdev_upper_line);	//add to plotly
 
-    var stdev_lower_line={
-        name:graph_data.yMean_label + ' -' + graph_data.yStdev_label,
-        type:'lines',
-        x:[0,graph_data.yData.avg_score_scaled.length],
-        y:[graph_data.yMean-graph_data.yStdev,graph_data.yMean-graph_data.yStdev],	// moyenne - écart type corrigée
-        marker: {         // marker is an object, valid marker keys: #scatter-marker
-            color: 'rgb(255,51,51)'
-        }
-    }
-    data.push(stdev_lower_line);
+    // var data = [
+    //     {
+    //         //x: graph_data.xData,  // Données axe x
+    //         y: graph_data.yData.avg_score_scaled,   // Données axe y
+    //         name : graph_data.yLabel,
+    //         type: 'bar'
+    //     }
+    //
+    // ];
+
+    // var mean_line={
+    //     name:graph_data.yMean_label,
+    //     type:'lines',
+    //     x:[0,graph_data.yData.avg_score_scaled.length],
+    //     y:[graph_data.yMean,graph_data.yMean],	// moyenne - écart type corrigée
+    //     marker: {         // marker is an object, valid marker keys: #scatter-marker
+    //         color: 'rgb(255,140,0)'
+    //     }
+    // };
+    // data.push(mean_line);	// add to plotly
+    //
+    // var stdev_upper_line={
+    //     name:graph_data.yMean_label + ' +' + graph_data.yStdev_label,
+    //     type:'lines',
+    //     x:[0,graph_data.yData.avg_score_scaled.length],
+    //     y:[graph_data.yMean+graph_data.yStdev,graph_data.yMean+graph_data.yStdev],	// moyenne - écart type corrigée
+    //     marker: {         // marker is an object, valid marker keys: #scatter-marker
+    //         color: 'rgb(51,255,51)'
+    //     }
+    // };
+    // data.push(stdev_upper_line);	//add to plotly
+    //
+    // var stdev_lower_line={
+    //     name:graph_data.yMean_label + ' -' + graph_data.yStdev_label,
+    //     type:'lines',
+    //     x:[0,graph_data.yData.avg_score_scaled.length],
+    //     y:[graph_data.yMean-graph_data.yStdev,graph_data.yMean-graph_data.yStdev],	// moyenne - écart type corrigée
+    //     marker: {         // marker is an object, valid marker keys: #scatter-marker
+    //         color: 'rgb(255,51,51)'
+    //     }
+    // }
+    // data.push(stdev_lower_line);
 //
 //  var avgObj={
 //   name: 'average organization',
@@ -684,27 +651,64 @@ dashboard.plotBar= function(graph_data){
 //   orientation: 'v',
 //   type: 'bar'
 // }
-    var layout = {
-        title: graph_data.title,
-        showlegend: true,
-        yaxis: {range: [0,1]}	// setting manual range of axes
-        //    shapes: [
-        //   //Line Horizontal
-        //   {
-        //     type: 'line',
-        // xref: 'paper',
-        // x0: 0,
-        // y0: graph_data.mean,
-        // x1: 1,
-        // y1: graph_data.mean,
-        //     line: {
-        //       color: 'rgb(50, 171, 96)',
-        //       width: 3      }
-        //   }
-        // ]
-    };
+//     var layout = {
+//         title: graph_data.title,
+//         showlegend: true,
+//         yaxis: {range: [0,1],
+//             title:graph_data.yLabel},	// setting manual range of axes
+//         xaxis: {title:graph_data.xLabel}	// setting manual range of axes
+//         //    shapes: [
+//         //   //Line Horizontal
+//         //   {
+//         //     type: 'line',
+//         // xref: 'paper',
+//         // x0: 0,
+//         // y0: graph_data.mean,
+//         // x1: 1,
+//         // y1: graph_data.mean,
+//         //     line: {
+//         //       color: 'rgb(50, 171, 96)',
+//         //       width: 3      }
+//         //   }
+//         // ]
+//     };
 
-    Plotly.newPlot(graph_data.DOM_id, data, layout, {displaylogo: false}, {showLink: false});
+    var data=[];
+    for(var i=0; i<graph_data.tab_to_plot.length;++i){
+        var temp_data = graph_data.tab_to_plot[i].yData;
+
+        //console.log(graph_data.yData[temp_data]);
+
+        data.push({y:graph_data.yData[temp_data],
+            name:graph_data.tab_to_plot[i].ylabel,
+            type:'bar'});
+
+        var layout = {
+            title: graph_data.tab_to_plot[i].title,
+            showlegend: true,
+            yaxis: {//range: [0,1],
+                title:graph_data.tab_to_plot[i].ylabel},	// setting manual range of axes
+            xaxis: {title:graph_data.tab_to_plot[i].xlabel}	// setting manual range of axes
+            //    shapes: [
+            //   //Line Horizontal
+            //   {
+            //     type: 'line',
+            // xref: 'paper',
+            // x0: 0,
+            // y0: graph_data.mean,
+            // x1: 1,
+            // y1: graph_data.mean,
+            //     line: {
+            //       color: 'rgb(50, 171, 96)',
+            //       width: 3      }
+            //   }
+            // ]
+        };
+
+        //console.log(data);
+        Plotly.newPlot(graph_data.tab_to_plot[i].DOM_id, [data[i]], layout, {displaylogo: false}, {showLink: false});
+    }
+
 
 };//end function plotBar
 

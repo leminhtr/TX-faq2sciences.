@@ -256,7 +256,109 @@ var dashboard = {
                     }
                 }
             }
-        }},
+        },
+    avg_quest_phy:
+        {
+            "query": {
+                "bool": {
+                    "must": [
+                        {
+                            "terms": {
+                                "_index": [
+                                    "faq2sciencesdistrib-2016.09.13",
+                                    "faq2sciencesdistrib-2016.09.14",
+                                    "faq2sciencesdistrib-2016.09.15",
+                                    "faq2sciencesdistrib-2016.09.16",
+                                    "faq2sciencesdistrib-2016.09.19",
+                                    "faq2sciencesdistrib-2016.09.20",
+                                    "faq2sciencesdistrib-2016.09.21",
+                                    "faq2sciencesdistrib-2016.09.22",
+                                    "faq2sciencesdistrib-2016.09.24",
+                                    "faq2sciencesdistrib-2016.09.26"
+                                ]
+                            }
+                        },
+                        {
+                            "term": {
+                                "depot_path.raw": "/Partenaires/UL/UL-Phy01"
+                            }
+                        },
+                        {
+                            "term": {
+                                "verb.raw": "scored"
+                            }
+                        }
+                    ],
+                    "must_not": [
+                        {
+                            "terms": {
+                                "question_id.raw": [
+                                    "qgMx9nWg3feUknCfwecgli",
+                                    "pky45GVJlvk0YYYe0wiTxe",
+                                    "KDiQi0UNikeZBzySvmA2k",
+                                    "Dvj5AqVq4RiIbIFWaJuSud",
+                                    "qVTVybVQlxckqCv1EI54h",
+                                    "udFJDEATISe7oQfqnd9Kki"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            "size": 0,
+            "aggs": {
+                "questions": {
+                    "terms": {
+                        "field": "question_id.raw",
+                        "size": 50
+                    },
+                    "aggs": {
+                        "users": {
+                            "terms": {
+                                "field": "user.raw",
+                                "size": 800
+                            },
+                            "aggs": {
+                                "max_time": {
+                                    "top_hits": {
+                                        "size": 1,
+                                        "fields": [
+                                            "timestamp",
+                                            "score_scaled"
+                                        ],
+                                        "sort": [
+                                            {
+                                                "timestamp": {
+                                                    "order": "desc"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "min_time": {
+                                    "top_hits": {
+                                        "size": 1,
+                                        "fields": [
+                                            "timestamp"
+                                        ],
+                                        "sort": [
+                                            {
+                                                "timestamp": {
+                                                    "order": "asc"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+    },
 
 	init : function(){	// mettre instance dans fonction
 		var vAvg_user_phy = new dashboard.graph_data(dashboard.query_list.avg_user_phy,
@@ -356,10 +458,14 @@ var dashboard = {
             //console.log(vAvg_user_phy.yData.delta_time);
             // moyenne du temps de réponse d'un étudiant sur tout un questionnaire
 			vAvg_user_phy.yData.avg_time=dashboard.calc_avg_nested(vAvg_user_phy.yData.delta_time);
-			//vAvg_user_phy.yData.avg_time.sort();
+			// convert miliseconde to secondes
+			vAvg_user_phy.yData.avg_time=dashboard.calc_milis_to_min(vAvg_user_phy.yData.avg_time);
+
 			//vAvg_user_phy.yData.avg_time.reverse();
             //console.log(vAvg_user_phy.yData.avg_time);
 			vAvg_user_phy.yData.stdev_time=dashboard.calc_unbiaised_stdev_nested(vAvg_user_phy.yData.delta_time);
+			vAvg_user_phy.yData.stdev_time=dashboard.calc_milis_to_min(vAvg_user_phy.yData.avg_time);
+            vAvg_user_phy.yData.avg_time.sort();
 
 			// nombre moyen de changement de réponse par étudiant sur tout un questionnaire
             vAvg_user_phy.yData.avg_nb_change=dashboard.calc_avg_nested(vAvg_user_phy.yData.nb_change);
@@ -487,8 +593,12 @@ var dashboard = {
             }
 
             vAvg_user_bio.yData.delta_time=dashboard.calc_delta_time(vAvg_user_bio.yData.max_time,vAvg_user_bio.yData.min_time); //delta_time= max_time-min_time
+
             vAvg_user_bio.yData.avg_time=dashboard.calc_avg_nested(vAvg_user_bio.yData.delta_time);
+            vAvg_user_bio.yData.avg_time=dashboard.calc_milis_to_min(vAvg_user_bio.yData.avg_time); // convert to second
+
             vAvg_user_bio.yData.stdev_time=dashboard.calc_unbiaised_stdev_nested(vAvg_user_bio.yData.delta_time);
+            vAvg_user_bio.yData.stdev_time=dashboard.calc_milis_to_min(vAvg_user_bio.yData.avg_time);   // convert to sec
 
             vAvg_user_bio.yData.avg_nb_change=dashboard.calc_avg_nested(vAvg_user_bio.yData.nb_change);
             vAvg_user_bio.yData.stdev_nb_change=dashboard.calc_unbiaised_stdev_nested(vAvg_user_bio.yData.nb_change);
@@ -507,13 +617,154 @@ var dashboard = {
 
 
 
-        }; // function phy
+        }; // function bio
 
         dashboard.send_Xhr(dashboard.readData, vAvg_user_bio);
 
         dashboard.graphs.push(vAvg_user_bio);	// ajout du graph dans a liste de graphs
 
 
+// ******************** Questionnaire de physique ***********************
+        var vAvg_quest_phy = new dashboard.graph_data(dashboard.query_list.avg_quest_phy,
+            "étudiant",
+            "Score moyen d'une question de physique",
+            "Score moyen au questionnaire de physique",
+            "bar_avg_quest_phy",
+            "Score total moyen du questionnaire de physique",
+            " l'écart type",
+//yData :			//{users:[], questions:[], nb_change_tot:0, nb_change:[], max_time:[], min_time:[], score_scaled:[]},
+            {questions:"aggregations.questions.buckets",// = tableau de .key (user_id)
+                nb_change_tot:".doc_count",
+                users:".users.buckets",	// = tableau de .key (question_id)
+                nb_change_per_quest:".doc_count",
+                max_time:".max_time.hits.hits",	// .max_time.hits.hits[0].fields : prendre 1ère  valeur du tableau hits.hits[]
+                max_time_val:".fields.max_time",// temps où user à terminé une question
+                min_time:".min_time.hits.hits",	//.min_time.hits.hits[0].fields : prendre 1ère  valeur du tableau hits.hits[]
+                min_time_val:".fields.timestamp",	// temps où user à commencé une question
+                score_scaled:".fields.score_scaled"}	//score de user à une question
+        );
+
+        vAvg_quest_phy.plotMe=dashboard.plot_quest;
+        vAvg_quest_phy.query_size={nb_user:800, nb_quest:40};	// inutile si déjà dans query ?
+        // variable à remettre dans constructeur ?
+
+        vAvg_quest_phy.yData ={	//nb changement, temps de réponse, score
+            //users:[],	// liste des users
+            users:[],	// listes des questions répondue pour chaque user
+            nb_change_tot:[],	// nombre de changement de réponses totales sur un questionnaire pour chaque user
+            nb_change:[],	// nombre de changement de réponses pour chaque question répondue, pour chaque user
+            avg_nb_change:[],	// moyenne de changement de réponse par user
+            stdev_nb_change:[],	// écart type de changement de réponse apr user
+            max_time:[],	// temps de la dernière réponse pour chaque question répondue, pour chaque user
+            min_time:[],	//temps de la première réponse pour chaque question répondue, pour chaque user
+            delta_time:[],	//temps de réponse pour chaque question répondue, pour chaque user
+            avg_time:[],		//temps moyen de réponse pour chaque question répondue, pour chaque user
+            stdev_time:[],	//écart type de changement de réponse par uset
+            pre_score_scaled:[],	//score de chaque question répondue, pour chaque user
+            avg_score_scaled:[],	//score moyen d'un questionnaire, pour chaque user
+            stdev_score_scaled:[]	//score moyen d'un questionnaire, pour chaque user
+        };
+
+        vAvg_quest_phy.set_yData= function(data_response) {
+
+            //DATA.aggregations.questions.buckets[]
+            var toFormat_data=dashboard.get_obj_path_value(data_response,vAvg_quest_phy.data_path.questions);
+
+            for(var i=0, nb_quest=toFormat_data.length; i<nb_quest;i++){	// pour chaque questions faire
+                var data= toFormat_data[i];
+
+                //DATA.aggregations.questions.buckets[].key = question_id
+                vAvg_quest_phy.xData[i]=data.key;
+
+                //DATA.aggregations.questions.buckets[].doc_count = nb tentatives totales pour 1 question
+                vAvg_quest_phy.yData.nb_change_tot[i]=data.doc_count;
+
+                //DATA.aggregations.users.buckets[].length = nb users ayant répondu à 1 quest
+                var nb_user= data.users.buckets.length;
+
+                var temp_users=[], temp_nb_change=[], temp_max_time=[], temp_min_time=[], temp_delta_time=[], temp_pre_score_scaled=[];
+
+                for(var j=0; j<nb_user;j++){	// pour chaque question répondu par user faire
+                    //DATA.aggregations.questions.buckets[].users.buckets[].
+                    var nested_data=data.users.buckets[j];
+
+                    //DATA.aggregations.questions.buckets[].users.buckets[].doc_count = nb de changement de user[j] pour une question[i]
+                    //vAvg_quest_phy.yData.nb_change[i][j]=nested_data.doc_count;
+                    temp_nb_change.push(nested_data.doc_count);
+
+                    //DATA.aggregations.questions.buckets[].questions.buckets[].max_time.hits.hits[0].fields.timestamp[0] = temps de la dernière réponse à une question
+                    //vAvg_quest_phy.yData.max_time[i][j]=nested_data.max_time.hits.hits[0].fields.timestamp[0];
+                    temp_max_time.push(nested_data.max_time.hits.hits[0].fields.timestamp[0]);
+
+                    //DATA.aggregations.questions.buckets[].users.buckets[].min_time.hits.hits[0].fields.timestamp[0] = temps de la première réponse à une question
+                    //vAvg_quest_phy.yData.min_time[i][j]=nested_data.min_time.hits.hits[0].fields.timestamp[0];
+                    temp_min_time.push(nested_data.min_time.hits.hits[0].fields.timestamp[0]);
+
+                    //DATA.aggregations.questions.buckets[].users.buckets[].max_time.hits.hits[0].fields.timestamp[0] = score de la dernière réponse à une question
+                    //vAvg_quest_phy.yData.pre_score_scaled[i][j]=nested_data.max_time.hits.hits[0].fields.score_scaled[0];
+                    temp_pre_score_scaled.push(nested_data.max_time.hits.hits[0].fields.score_scaled[0]);
+
+                }
+                vAvg_quest_phy.yData.users.push(temp_users);
+                vAvg_quest_phy.yData.nb_change.push(temp_nb_change);
+                //console.log(temp_nb_change);
+                vAvg_quest_phy.yData.max_time.push(temp_max_time);
+                vAvg_quest_phy.yData.min_time.push(temp_min_time);
+
+                //vAvg_quest_phy.yData.delta_time.push(temp_delta_time);
+                //console.log(temp_delta_time);
+                vAvg_quest_phy.yData.pre_score_scaled.push(temp_pre_score_scaled);
+            }
+
+
+            // temps de réponse d'un étudiant pour chaque question d'un questionnaire
+            vAvg_quest_phy.yData.delta_time=dashboard.calc_delta_time(vAvg_quest_phy.yData.max_time,vAvg_quest_phy.yData.min_time); //delta_time= max_time-min_time
+            //console.log(vAvg_quest_phy.yData.delta_time);
+            // moyenne du temps de réponse d'un étudiant sur tout un questionnaire
+            vAvg_quest_phy.yData.avg_time=dashboard.calc_avg_nested(vAvg_quest_phy.yData.delta_time);
+            vAvg_quest_phy.yData.avg_time=dashboard.calc_milis_to_min(vAvg_quest_phy.yData.avg_time); // convert to sec
+
+            //vAvg_quest_phy.yData.avg_time.sort();
+            //vAvg_quest_phy.yData.avg_time.reverse();
+            //console.log(vAvg_quest_phy.yData.avg_time);
+            vAvg_quest_phy.yData.stdev_time=dashboard.calc_unbiaised_stdev_nested(vAvg_quest_phy.yData.delta_time);
+            vAvg_quest_phy.yData.stdev_time=dashboard.calc_milis_to_min(vAvg_quest_phy.yData.stdev_time);
+
+
+            // nombre moyen de changement de réponse par étudiant sur tout un questionnaire
+            vAvg_quest_phy.yData.avg_nb_change=dashboard.calc_avg_nested(vAvg_quest_phy.yData.nb_change);
+            vAvg_quest_phy.yData.avg_nb_change.sort();
+            vAvg_quest_phy.yData.avg_nb_change.reverse();
+            //console.log(vAvg_quest_phy.yData.avg_nb_change);
+            vAvg_quest_phy.yData.stdev_nb_change=dashboard.calc_unbiaised_stdev_nested(vAvg_quest_phy.yData.nb_change);
+
+            // score moyen d'un utilisateur sur tout un questionnaire
+            vAvg_quest_phy.yData.avg_score_scaled=dashboard.calc_avg_nested(vAvg_quest_phy.yData.pre_score_scaled);
+            vAvg_quest_phy.yData.avg_score_scaled.sort();
+            vAvg_quest_phy.yData.avg_score_scaled.reverse();
+            vAvg_quest_phy.yData.stdev_score_scaled=dashboard.calc_unbiaised_stdev_nested(vAvg_quest_phy.yData.pre_score_scaled);
+
+            vAvg_quest_phy.yMean=dashboard.calc_avg(vAvg_quest_phy.yData.avg_score_scaled);
+            vAvg_quest_phy.yStdev=dashboard.calc_unbiaised_stdev(vAvg_quest_phy.yData.avg_score_scaled);  //= écart-type de la moyenne des score par utilisateurs
+            // != écart type des écarts type du score au questionnaire d'un user
+
+            vAvg_quest_phy.query_size.nb_user=vAvg_quest_phy.xData.length;
+
+
+
+        }; // function set yData phy
+
+        vAvg_quest_phy.tab_to_plot=[ {DOM_id:"bar_avg_quest_phy", yData:"avg_score_scaled",xlabel:"Question",ylabel:"Score moyen d'une question au questionnaire",
+            title:"Score moyen d'une question au questionnaire de physique"},
+            {DOM_id:"bar_avg_quest_phy_nb_change", yData:"avg_nb_change", xlabel:"Question", ylabel:"Nombre moyen de changements de réponse à une question",
+                title:"Nombre moyen de changements de réponse par question au questionnaire de physique"},
+            {DOM_id:"bar_avg_quest_phy_deltaT", yData:"avg_time",xlabel:"Question", ylabel:"Temps moyen de réponse à une question (en seconde)",
+                title:"Temps moyen de réponse par question au questionnaire de physique (en seconde)"}
+        ];
+
+        dashboard.send_Xhr(dashboard.readData, vAvg_quest_phy);
+
+        dashboard.graphs.push(vAvg_quest_phy);	// ajout du graph dans a liste de graphs
 
 		}//fin init()
 
@@ -715,6 +966,223 @@ dashboard.plotBar= function(graph_data, tab_to_plot){
 };//end function plotBar
 
 
+
+dashboard.plot_quest= function(graph_data){
+
+    // vAvg_quest_phy.yData ={	//nb changement, temps de réponse, score
+    //     //users:[],	// liste des users
+    //     users:[],	// listes des questions répondue pour chaque user
+    //     nb_change_tot:[],	// nombre de changement de réponses totales sur un questionnaire pour chaque user
+    //     nb_change:[],	// nombre de changement de réponses pour chaque question répondue, pour chaque user
+    //     avg_nb_change:[],	// moyenne de changement de réponse par user
+    //     stdev_nb_change:[],	// écart type de changement de réponse apr user
+    //     max_time:[],	// temps de la dernière réponse pour chaque question répondue, pour chaque user
+    //     min_time:[],	//temps de la première réponse pour chaque question répondue, pour chaque user
+    //     delta_time:[],	//temps de réponse pour chaque question répondue, pour chaque user
+    //     avg_time:[],		//temps moyen de réponse pour chaque question répondue, pour chaque user
+    //     stdev_time:[],	//écart type de changement de réponse par uset
+    //     pre_score_scaled:[],	//score de chaque question répondue, pour chaque user
+    //     avg_score_scaled:[],	//score moyen d'un questionnaire, pour chaque user
+    //     stdev_score_scaled:[]	//score moyen d'un questionnaire, pour chaque user
+    // };
+    // vAvg_quest_phy.tab_to_plot=[ {DOM_id:"bar_avg_quest_phy", yData:"avg_score_scaled",xlabel:"Question",ylabel:"Score moyen d'une question au questionnaire",
+    //     title:"Score moyen d'une question au questionnaire de physique"},
+    //     {DOM_id:"bar_avg_quest_phy_nb_change", yData:"avg_nb_change", xlabel:"Question", ylabel:"Nombre moyen de changements de réponse à une question",
+    //         title:"Nombre moyen de changements de réponse par question au questionnaire de physique"},
+    //     {DOM_id:"bar_avg_quest_phy_deltaT", yData:"avg_time",xlabel:"Question", ylabel:"Temps moyen de réponse à une question (en seconde)",
+    //         title:"Temps moyen de réponse par question au questionnaire de physique (en seconde)"}
+    // ];
+    // ***************** Plot score avg **************************
+    var data_score_avg=[];
+    var temp_data=graph_data.yData.avg_score_scaled;
+
+    var temp_data_to_plot={
+        y:temp_data,
+        name:"Score moyen d'une question au questionnaire",
+        type:'bar'
+    };
+
+    data_score_avg.push(temp_data_to_plot);
+
+    var mean_line={
+            name:graph_data.yMean_label,
+            type:'lines',
+            x:[0,graph_data.yData.avg_score_scaled.length],
+            y:[graph_data.yMean,graph_data.yMean],	// moyenne - écart type corrigée
+            marker: {         // marker is an object, valid marker keys: #scatter-marker
+                color: 'rgb(255,140,0)'
+            }
+        };
+        data_score_avg.push(mean_line);	// add to plotly
+
+        var stdev_upper_line={
+            name:graph_data.yMean_label + ' +' + graph_data.yStdev_label,
+            type:'lines',
+            x:[0,graph_data.yData.avg_score_scaled.length],
+            y:[graph_data.yMean+graph_data.yStdev,graph_data.yMean+graph_data.yStdev],	// moyenne - écart type corrigée
+            marker: {         // marker is an object, valid marker keys: #scatter-marker
+                color: 'rgb(51,255,51)'
+            }
+        };
+        data_score_avg.push(stdev_upper_line);	//add to plotly
+
+        var stdev_lower_line={
+            name:graph_data.yMean_label + ' -' + graph_data.yStdev_label,
+            type:'lines',
+            x:[0,graph_data.yData.avg_score_scaled.length],
+            y:[graph_data.yMean-graph_data.yStdev,graph_data.yMean-graph_data.yStdev],	// moyenne - écart type corrigée
+            marker: {         // marker is an object, valid marker keys: #scatter-marker
+                color: 'rgb(255,51,51)'
+            }
+        }
+        data_score_avg.push(stdev_lower_line);
+
+    // Layout
+    var layout = {
+        title: graph_data.title,
+        showlegend: true,
+        yaxis: {range: [0,1],
+            title:graph_data.yLabel},	// setting manual range of axes
+        xaxis: {title:graph_data.xLabel}	// setting manual range of axes
+
+    };
+
+    Plotly.newPlot(graph_data.DOM_id, data_score_avg, layout, {displaylogo: false}, {showLink: false});
+
+
+
+//****************** Plot nb changement *********************
+
+    var data_nb_change_avg=[];
+    temp_data=graph_data.yData.avg_nb_change;
+
+    temp_data_to_plot={
+        y:temp_data,
+        name:"Nombre moyen de changement à une question au questionnaire",
+        type:'bar'
+    };
+
+    data_nb_change_avg.push(temp_data_to_plot);
+
+    var mean_label ="Nombre moyen total de changements de réponse au questionnaire de physique";
+    var mean_value=dashboard.calc_avg(graph_data.yData.avg_nb_change);
+    var std_value=dashboard.calc_unbiaised_stdev(graph_data.yData.avg_nb_change);
+
+    alert(std_value);
+    alert(mean_value);
+    mean_line={
+        name:mean_label,
+        type:'lines',
+        x:[0,graph_data.yData.avg_nb_change.length],
+        y:[mean_value,mean_value],	// moyenne
+        marker: {         // marker is an object, valid marker keys: #scatter-marker
+            color: 'rgb(255,140,0)'
+        }
+    };
+    data_nb_change_avg.push(mean_line);	// add to plotly
+
+    stdev_upper_line={
+        name:graph_data.yMean_label + ' +' + graph_data.yStdev_label,
+        type:'lines',
+        x:[0,graph_data.yData.avg_nb_change.length],
+        y:[mean_value+std_value, mean_value+std_value ],	// moyenne - écart type corrigée
+        marker: {         // marker is an object, valid marker keys: #scatter-marker
+            color: 'rgb(51,255,51)'
+        }
+    };
+    data_nb_change_avg.push(stdev_upper_line);	//add to plotly
+
+    stdev_lower_line={
+        name:graph_data.yMean_label + ' -' + graph_data.yStdev_label,
+        type:'lines',
+        x:[0,graph_data.yData.avg_nb_change.length],
+        y:[mean_value-std_value, mean_value-std_value ],	// moyenne - écart type corrigée
+        marker: {         // marker is an object, valid marker keys: #scatter-marker
+            color: 'rgb(255,51,51)'
+        }
+    }
+    data_nb_change_avg.push(stdev_lower_line);
+
+    // Layout
+    layout = {
+        title: "Nombre moyen de changements de réponse par question au questionnaire de physique",
+        showlegend: true,
+        yaxis: {title:"Nombre moyen de changements de réponse à une question"},	// setting manual range of axes
+        xaxis: {title:"Question"}	// setting manual range of axes
+
+    };
+
+    Plotly.newPlot("bar_avg_quest_phy_nb_change", data_nb_change_avg, layout, {displaylogo: false}, {showLink: false});
+
+
+
+    //****************** Plot temps réponse *********************
+
+    var data_deltaT_avg=[];
+    temp_data=graph_data.yData.avg_time;
+
+    temp_data_to_plot={
+        y:temp_data,
+        name:"Temps moyen de réponse à une question au questionnaire",
+        type:'bar'
+    };
+
+    data_deltaT_avg.push(temp_data_to_plot);
+
+    mean_label ="Nombre moyen total de changements de réponse au questionnaire de physique";
+    mean_value=dashboard.calc_avg(temp_data);
+    std_value=dashboard.calc_unbiaised_stdev(temp_data);
+
+    mean_line={
+        name:mean_label,
+        type:'lines',
+        x:[0,temp_data.length],
+        y:[mean_value,mean_value],	// moyenne
+        marker: {         // marker is an object, valid marker keys: #scatter-marker
+            color: 'rgb(255,140,0)'
+        }
+    };
+    data_deltaT_avg.push(mean_line);	// add to plotly
+
+    stdev_upper_line={
+        name:graph_data.yMean_label + ' +' + graph_data.yStdev_label,
+        type:'lines',
+        x:[0,graph_data.yData.avg_nb_change.length],
+        y:[mean_value+std_value, mean_value+std_value ],	// moyenne - écart type corrigée
+        marker: {         // marker is an object, valid marker keys: #scatter-marker
+            color: 'rgb(51,255,51)'
+        }
+    };
+    data_deltaT_avg.push(stdev_upper_line);	//add to plotly
+
+    stdev_lower_line={
+        name:graph_data.yMean_label + ' -' + graph_data.yStdev_label,
+        type:'lines',
+        x:[0,graph_data.yData.avg_nb_change.length],
+        y:[mean_value-std_value, mean_value-std_value ],	// moyenne - écart type corrigée
+        marker: {         // marker is an object, valid marker keys: #scatter-marker
+            color: 'rgb(255,51,51)'
+        }
+    }
+    data_deltaT_avg.push(stdev_lower_line);
+
+    // Layout
+    layout = {
+        title: "Nombre moyen de réponse au questionnaire de physique",
+        showlegend: true,
+        yaxis: {title:"Temps moyen de réponse à une question"},	// setting manual range of axes
+        xaxis: {title:"Question"}	// setting manual range of axes
+
+    };
+
+    Plotly.newPlot("bar_avg_quest_phy_deltaT", data_deltaT_avg, layout, {displaylogo: false}, {showLink: false});
+
+
+
+
+
+};//end function plot
+
 dashboard.calc_delta_time= function(tab1, tab2){
 	var delta_time=[];
 
@@ -728,6 +1196,26 @@ dashboard.calc_delta_time= function(tab1, tab2){
     }
 	return delta_time;
 };
+
+dashboard.calc_milis_to_sec= function(tab){
+    var to_sec=[];
+
+    for(var i=0; i<tab.length;i++) {
+        to_sec.push(tab[i]/1000);
+    }
+    return to_sec;
+};
+
+dashboard.calc_milis_to_min= function(tab){
+    var to_min=[];
+
+    for(var i=0; i<tab.length;i++) {
+        to_min.push((tab[i]/1000)/60);
+    }
+    return to_min;
+};
+
+
 
 dashboard.calc_avg_nested= function(tab){
     var avg_nested=[];

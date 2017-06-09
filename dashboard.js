@@ -1379,7 +1379,7 @@ dashboard.calc_milis_to_min= function(tab){
     var to_min=[];
 
     for(var i=0; i<tab.length;i++) {
-        to_min.push((tab[i]/3600);
+        to_min.push((tab[i]/3600));
     }
     return to_min;
 };
@@ -1489,9 +1489,6 @@ dashboard.quantile=function(array, percentile) {
 }
 
 
-////
-//window.addEventListener("load", dashboard.init_vAvg_user_phy);    // -> move to *.html
-//window.addEventListener("load", dashboard.init_vAvg_user_bio);    // -> move to *.html
-window.addEventListener("load", dashboard.init_vAvg_quest_phy);     // -> move to *.html
+
 
 

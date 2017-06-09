@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Résultats par étudiant au questionnaire de physique</title>
+
+
+    <!-- Load c3.css -->
+    <!-- <link href="./C3js/c3.css" rel="stylesheet" type="text/css"> -->
+
+    <!--&lt;!&ndash; Load d3.js and c3.js &ndash;&gt;-->
+    <!--     <script src="./C3js/d3.v3.min.js" charset="utf-8"></script>
+        <script src="./C3js/c3.js"></script> -->
+
+    <!-- Load plotly js -->
+    <script src="plotly-latest.min.js"></script>
+
+    <!-- include jStat, from the CDN or otherwise -->
+    <script src="./jStat/jstat.js"></script>
+
+    <!--<script src="es_query.js"></script>-->
+
+    <script src="dashboard.js"></script>
+
+</head>
+<body>
+
+
+<div id="bar_avg_user_phy"></div>
+<div id="bar_avg_user_phy_nb_change"></div>
+<div id="bar_avg_user_phy_deltaT"></div>
+<div id="bar_avg_user_phy_deltaT_change"></div>
+<div id="bar_avg_user_bio"></div>
+<div id="hist_avg_user"></div>
+
+
+<script type="text/javascript">
+    window.addEventListener("load", dashboard.init_vAvg_user_phy);    // -> move to *.html
+</script>
+
+
+<!-- <button onclick="setTimeout(query(readData,bar_avg_user_bio), 300)">Try it</button> -->
+
+
+</body>
+</html>

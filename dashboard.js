@@ -360,273 +360,304 @@ var dashboard = {
 
     },
 
-	init : function(){	// mettre instance dans fonction
-		var vAvg_user_phy = new dashboard.graph_data(dashboard.query_list.avg_user_phy,
-			"étudiant",
-			"Score moyen d'un étudiant",
-			"Score moyen d'un étudiant au questionnaire de physique",
-			"bar_avg_user_phy",
-			"Score total moyen des étudiants",
-			" l'écart type",
+	init_vAvg_user_phy : function() {	// mettre instance dans fonction
+        var vAvg_user_phy = new dashboard.graph_data(dashboard.query_list.avg_user_phy,
+            "étudiant",
+            "Score moyen d'un étudiant",
+            "Score moyen d'un étudiant au questionnaire de physique",
+            "bar_avg_user_phy",
+            "Score total moyen des étudiants",
+            " l'écart type",
 //yData :			//{users:[], questions:[], nb_change_tot:0, nb_change:[], max_time:[], min_time:[], score_scaled:[]},
-			{users:"aggregations.users.buckets",// = tableau de .key (user_id)
-            nb_change_tot:".doc_count",
-            questions:".questions.buckets",	// = tableau de .key (question_id)
-			nb_change_per_quest:".doc_count",
-			max_time:".max_time.hits.hits",	// .max_time.hits.hits[0].fields : prendre 1ère  valeur du tableau hits.hits[]
-            max_time_val:".fields.max_time",// temps où user à terminé une question
-            min_time:".min_time.hits.hits",	//.min_time.hits.hits[0].fields : prendre 1ère  valeur du tableau hits.hits[]
-            min_time_val:".fields.timestamp",	// temps où user à commencé une question
-			score_scaled:".fields.score_scaled"}	//score de user à une question
-			);
+            {
+                users: "aggregations.users.buckets",// = tableau de .key (user_id)
+                nb_change_tot: ".doc_count",
+                questions: ".questions.buckets",	// = tableau de .key (question_id)
+                nb_change_per_quest: ".doc_count",
+                max_time: ".max_time.hits.hits",	// .max_time.hits.hits[0].fields : prendre 1ère  valeur du tableau hits.hits[]
+                max_time_val: ".fields.max_time",// temps où user à terminé une question
+                min_time: ".min_time.hits.hits",	//.min_time.hits.hits[0].fields : prendre 1ère  valeur du tableau hits.hits[]
+                min_time_val: ".fields.timestamp",	// temps où user à commencé une question
+                score_scaled: ".fields.score_scaled"
+            }	//score de user à une question
+        );
 
-		    vAvg_user_phy.plotMe=dashboard.plotBar;
-		    vAvg_user_phy.query_size={nb_user:800, nb_quest:40};	// inutile si déjà dans query ?
-                                                                    // variable à remettre dans constructeur ?
+        vAvg_user_phy.plotMe = dashboard.plotBar;
+        vAvg_user_phy.query_size = {nb_user: 800, nb_quest: 40};	// inutile si déjà dans query ?
+        // variable à remettre dans constructeur ?
 
-            vAvg_user_phy.yData ={	//nb changement, temps de réponse, score
+        vAvg_user_phy.yData = {	//nb changement, temps de réponse, score
             //users:[],	// liste des users
-            questions:[],	// listes des questions répondue pour chaque user
-            nb_change_tot:[],	// nombre de changement de réponses totales sur un questionnaire pour chaque user
-            nb_change:[],	// nombre de changement de réponses pour chaque question répondue, pour chaque user
-            avg_nb_change:[],	// moyenne de changement de réponse par user
-            stdev_nb_change:[],	// écart type de changement de réponse apr user
-            max_time:[],	// temps de la dernière réponse pour chaque question répondue, pour chaque user
-            min_time:[],	//temps de la première réponse pour chaque question répondue, pour chaque user
-            delta_time:[],	//temps de réponse pour chaque question répondue, pour chaque user
-            avg_time:[],		//temps moyen de réponse pour chaque question répondue, pour chaque user
-            stdev_time:[],	//écart type de changement de réponse par uset
-            pre_score_scaled:[],	//score de chaque question répondue, pour chaque user
-            avg_score_scaled:[],	//score moyen d'un questionnaire, pour chaque user
-            stdev_score_scaled:[]	//score moyen d'un questionnaire, pour chaque user
+            questions: [],	// listes des questions répondue pour chaque user
+            nb_change_tot: [],	// nombre de changement de réponses totales sur un questionnaire pour chaque user
+            nb_change: [],	// nombre de changement de réponses pour chaque question répondue, pour chaque user
+            avg_nb_change: [],	// moyenne de changement de réponse par user
+            stdev_nb_change: [],	// écart type de changement de réponse apr user
+            max_time: [],	// temps de la dernière réponse pour chaque question répondue, pour chaque user
+            min_time: [],	//temps de la première réponse pour chaque question répondue, pour chaque user
+            delta_time: [],	//temps de réponse pour chaque question répondue, pour chaque user
+            avg_time: [],		//temps moyen de réponse pour chaque question répondue, pour chaque user
+            stdev_time: [],	//écart type de changement de réponse par uset
+            pre_score_scaled: [],	//score de chaque question répondue, pour chaque user
+            avg_score_scaled: [],	//score moyen d'un questionnaire, pour chaque user
+            stdev_score_scaled: []	//score moyen d'un questionnaire, pour chaque user
         };
 
-		vAvg_user_phy.set_yData= function(data_response) {
+        vAvg_user_phy.set_yData = function (data_response) {
 
-			//DATA.aggregations.users.buckets[]
-            var toFormat_data=dashboard.get_obj_path_value(data_response,vAvg_user_phy.data_path.users);
+            //DATA.aggregations.users.buckets[]
+            var toFormat_data = dashboard.get_obj_path_value(data_response, vAvg_user_phy.data_path.users);
 
-            for(var i=0, nb_user=toFormat_data.length; i<nb_user;i++){	// pour chaque user faire
-                var data= toFormat_data[i];
+            for (var i = 0, nb_user = toFormat_data.length; i < nb_user; i++) {	// pour chaque user faire
+                var data = toFormat_data[i];
 
                 //DATA.aggregations.users.buckets[].key = user_id
-                vAvg_user_phy.xData[i]=data.key;
+                vAvg_user_phy.xData[i] = data.key;
 
                 //DATA.aggregations.users.buckets[].question_id = nb tentatives totales de user
-                vAvg_user_phy.yData.nb_change_tot[i]=data.doc_count;
+                vAvg_user_phy.yData.nb_change_tot[i] = data.doc_count;
 
                 //DATA.aggregations.users.buckets[].length = nb questions répondu par user
-                var nb_quest= data.questions.buckets.length;
+                var nb_quest = data.questions.buckets.length;
 
-                var temp_questions=[], temp_nb_change=[], temp_max_time=[], temp_min_time=[], temp_delta_time=[], temp_pre_score_scaled=[];
+                var temp_questions = [], temp_nb_change = [], temp_max_time = [], temp_min_time = [],
+                    temp_delta_time = [], temp_pre_score_scaled = [];
 
-            	for(var j=0; j<nb_quest;j++){	// pour chaque question répondu par user faire
-					//DATA.aggregations.questions.buckets[].questions.buckets[].
-            		var nested_data=data.questions.buckets[j];
+                for (var j = 0; j < nb_quest; j++) {	// pour chaque question répondu par user faire
+                    //DATA.aggregations.questions.buckets[].questions.buckets[].
+                    var nested_data = data.questions.buckets[j];
 
                     //DATA.aggregations.questions.buckets[].questions.buckets[].doc_count = nb de changement de user pour une question
                     //vAvg_user_phy.yData.nb_change[i][j]=nested_data.doc_count;
-					temp_nb_change.push(nested_data.doc_count);
+                    temp_nb_change.push(nested_data.doc_count);
 
                     //DATA.aggregations.questions.buckets[].questions.buckets[].max_time.hits.hits[0].fields.timestamp[0] = temps de la dernière réponse à une question
                     //vAvg_user_phy.yData.max_time[i][j]=nested_data.max_time.hits.hits[0].fields.timestamp[0];
                     temp_max_time.push(nested_data.max_time.hits.hits[0].fields.timestamp[0]);
 
                     //DATA.aggregations.questions.buckets[].questions.buckets[].min_time.hits.hits[0].fields.timestamp[0] = temps de la première réponse à une question
-            		//vAvg_user_phy.yData.min_time[i][j]=nested_data.min_time.hits.hits[0].fields.timestamp[0];
-            		temp_min_time.push(nested_data.min_time.hits.hits[0].fields.timestamp[0]);
+                    //vAvg_user_phy.yData.min_time[i][j]=nested_data.min_time.hits.hits[0].fields.timestamp[0];
+                    temp_min_time.push(nested_data.min_time.hits.hits[0].fields.timestamp[0]);
 
                     //DATA.aggregations.questions.buckets[].questions.buckets[].max_time.hits.hits[0].fields.timestamp[0] = score de la dernière réponse à une question
-            		//vAvg_user_phy.yData.pre_score_scaled[i][j]=nested_data.max_time.hits.hits[0].fields.score_scaled[0];
-            		temp_pre_score_scaled.push(nested_data.max_time.hits.hits[0].fields.score_scaled[0]);
+                    //vAvg_user_phy.yData.pre_score_scaled[i][j]=nested_data.max_time.hits.hits[0].fields.score_scaled[0];
+                    temp_pre_score_scaled.push(nested_data.max_time.hits.hits[0].fields.score_scaled[0]);
 
-				}
-				vAvg_user_phy.yData.questions.push(temp_questions);
-				vAvg_user_phy.yData.nb_change.push(temp_nb_change);
-				//console.log(temp_nb_change);
-				vAvg_user_phy.yData.max_time.push(temp_max_time);
-				vAvg_user_phy.yData.min_time.push(temp_min_time);
+                }
+                vAvg_user_phy.yData.questions.push(temp_questions);
+                vAvg_user_phy.yData.nb_change.push(temp_nb_change);
+                //console.log(temp_nb_change);
+                vAvg_user_phy.yData.max_time.push(temp_max_time);
+                vAvg_user_phy.yData.min_time.push(temp_min_time);
 
-				//vAvg_user_phy.yData.delta_time.push(temp_delta_time);
+                //vAvg_user_phy.yData.delta_time.push(temp_delta_time);
                 //console.log(temp_delta_time);
-				vAvg_user_phy.yData.pre_score_scaled.push(temp_pre_score_scaled);
-			}
+                vAvg_user_phy.yData.pre_score_scaled.push(temp_pre_score_scaled);
+            }
 
 
-			// temps de réponse d'un étudiant pour chaque question d'un questionnaire
-			vAvg_user_phy.yData.delta_time=dashboard.calc_delta_time(vAvg_user_phy.yData.max_time,vAvg_user_phy.yData.min_time); //delta_time= max_time-min_time
+            // temps de réponse d'un étudiant pour chaque question d'un questionnaire
+            vAvg_user_phy.yData.delta_time = dashboard.calc_nested_delta_time(vAvg_user_phy.yData.max_time, vAvg_user_phy.yData.min_time); //delta_time= max_time-min_time
             //console.log(vAvg_user_phy.yData.delta_time);
             // moyenne du temps de réponse d'un étudiant sur tout un questionnaire
-			vAvg_user_phy.yData.avg_time=dashboard.calc_avg_nested(vAvg_user_phy.yData.delta_time);
-			// convert miliseconde to secondes
-			vAvg_user_phy.yData.avg_time=dashboard.calc_milis_to_min(vAvg_user_phy.yData.avg_time);
+            vAvg_user_phy.yData.avg_time = dashboard.calc_avg_nested(vAvg_user_phy.yData.delta_time);
+            // convert miliseconde to secondes
+            vAvg_user_phy.yData.avg_time = dashboard.calc_milis_to_min(vAvg_user_phy.yData.avg_time);
 
-			//vAvg_user_phy.yData.avg_time.reverse();
+            //vAvg_user_phy.yData.avg_time.reverse();
             //console.log(vAvg_user_phy.yData.avg_time);
-			vAvg_user_phy.yData.stdev_time=dashboard.calc_unbiaised_stdev_nested(vAvg_user_phy.yData.delta_time);
-			vAvg_user_phy.yData.stdev_time=dashboard.calc_milis_to_min(vAvg_user_phy.yData.avg_time);
-            vAvg_user_phy.yData.avg_time.sort();
+            vAvg_user_phy.yData.stdev_time = dashboard.calc_unbiaised_stdev_nested(vAvg_user_phy.yData.delta_time);
+            vAvg_user_phy.yData.stdev_time = dashboard.calc_milis_to_min(vAvg_user_phy.yData.avg_time);
+            //vAvg_user_phy.yData.avg_time.sort();
 
-			// nombre moyen de changement de réponse par étudiant sur tout un questionnaire
-            vAvg_user_phy.yData.avg_nb_change=dashboard.calc_avg_nested(vAvg_user_phy.yData.nb_change);
-            vAvg_user_phy.yData.avg_nb_change.sort();
-            vAvg_user_phy.yData.avg_nb_change.reverse();
+            // nombre moyen de changement de réponse par étudiant sur tout un questionnaire
+            vAvg_user_phy.yData.avg_nb_change = dashboard.calc_avg_nested(vAvg_user_phy.yData.nb_change);
+            //vAvg_user_phy.yData.avg_nb_change.sort();
+            //vAvg_user_phy.yData.avg_nb_change.reverse();
             //console.log(vAvg_user_phy.yData.avg_nb_change);
-            vAvg_user_phy.yData.stdev_nb_change=dashboard.calc_unbiaised_stdev_nested(vAvg_user_phy.yData.nb_change);
+            vAvg_user_phy.yData.stdev_nb_change = dashboard.calc_unbiaised_stdev_nested(vAvg_user_phy.yData.nb_change);
 
             // score moyen d'un utilisateur sur tout un questionnaire
-            vAvg_user_phy.yData.avg_score_scaled=dashboard.calc_avg_nested(vAvg_user_phy.yData.pre_score_scaled);
-            vAvg_user_phy.yData.avg_score_scaled.sort();
-            vAvg_user_phy.yData.avg_score_scaled.reverse();
-            vAvg_user_phy.yData.stdev_score_scaled=dashboard.calc_unbiaised_stdev_nested(vAvg_user_phy.yData.pre_score_scaled);
+            vAvg_user_phy.yData.avg_score_scaled = dashboard.calc_avg_nested(vAvg_user_phy.yData.pre_score_scaled);
+            //vAvg_user_phy.yData.avg_score_scaled.sort();
+            //vAvg_user_phy.yData.avg_score_scaled.reverse();
+            vAvg_user_phy.yData.stdev_score_scaled = dashboard.calc_unbiaised_stdev_nested(vAvg_user_phy.yData.pre_score_scaled);
 
-            vAvg_user_phy.yMean=dashboard.calc_avg(vAvg_user_phy.yData.avg_score_scaled);
-            vAvg_user_phy.yStdev=dashboard.calc_unbiaised_stdev(vAvg_user_phy.yData.avg_score_scaled);  //= écart-type de la moyenne des score par utilisateurs
-                                                                                            // != écart type des écarts type du score au questionnaire d'un user
+            vAvg_user_phy.yMean = dashboard.calc_avg(vAvg_user_phy.yData.avg_score_scaled);
+            vAvg_user_phy.yStdev = dashboard.calc_unbiaised_stdev(vAvg_user_phy.yData.avg_score_scaled);  //= écart-type de la moyenne des score par utilisateurs
+            // != écart type des écarts type du score au questionnaire d'un user
 
-            vAvg_user_phy.query_size.nb_user=vAvg_user_phy.xData.length;
-
+            vAvg_user_phy.query_size.nb_user = vAvg_user_phy.xData.length;
 
 
         }; // function set yData phy
 
-        vAvg_user_phy.tab_to_plot=[ {DOM_id:"bar_avg_user_phy", yData:"avg_score_scaled",xlabel:"étudiant",ylabel:"Score moyen d'un étudiant au questionnaire",
-                                    title:"Score moyen d'un étudiant au questionnaire de physique"},
-                                    {DOM_id:"bar_avg_user_phy_nb_change", yData:"avg_nb_change", xlabel:"étudiant", ylabel:"Nombre moyen de changements de réponse au questionnaire",
-                                    title:"Nombre moyen de changements de réponse par étudiant au questionnaire de physique"},
-                                    {DOM_id:"bar_avg_user_phy_deltaT", yData:"avg_time",xlabel:"étudiant", ylabel:"Temps moyen de réponse au questionnaire (en seconde)",
-                                    title:"Temps moyen de réponse au questionnaire de physique par étudiant (en seconde)"}
-                                   ];
+        vAvg_user_phy.tab_to_plot = [{
+            DOM_id: "bar_avg_user_phy",
+            yData: "avg_score_scaled",
+            xlabel: "étudiant",
+            ylabel: "Score moyen d'un étudiant au questionnaire",
+            title: "Score moyen d'un étudiant au questionnaire de physique"
+        },
+            {
+                DOM_id: "bar_avg_user_phy_nb_change",
+                yData: "avg_nb_change",
+                xlabel: "étudiant",
+                ylabel: "Nombre moyen de changements de réponse au questionnaire",
+                title: "Nombre moyen de changements de réponse par étudiant au questionnaire de physique"
+            },
+            {
+                DOM_id: "bar_avg_user_phy_deltaT",
+                yData: "avg_time",
+                xlabel: "étudiant",
+                ylabel: "Temps moyen de réponse au questionnaire (en seconde)",
+                title: "Temps moyen de réponse au questionnaire de physique par étudiant (en seconde)"
+            }
+        ];
 
         dashboard.send_Xhr(dashboard.readData, vAvg_user_phy);
 
         dashboard.graphs.push(vAvg_user_phy);	// ajout du graph dans a liste de graphs
 
-        //***************************** USER BIO *********************************************
+    },
 
-        var vAvg_user_bio = new dashboard.graph_data(dashboard.query_list.avg_user_bio,
-            "étudiant",
-            "Score moyen d'un étudiant",
-            "Score moyen d'un étudiant au questionnaire de biologie",
-            "bar_avg_user_bio",
-            "Score total moyen des étudiants",
-            " l'écart type",
+     init_vAvg_user_bio : function () {
+
+
+         //***************************** USER BIO *********************************************
+
+         var vAvg_user_bio = new dashboard.graph_data(dashboard.query_list.avg_user_bio,
+             "étudiant",
+             "Score moyen d'un étudiant",
+             "Score moyen d'un étudiant au questionnaire de biologie",
+             "bar_avg_user_bio",
+             "Score total moyen des étudiants",
+             " l'écart type",
 //yData :			//{users:[], questions:[], nb_change_tot:0, nb_change:[], max_time:[], min_time:[], score_scaled:[]},
-            {users:"aggregations.users.buckets",// = tableau de .key (user_id)
-                nb_change_tot:".doc_count",
-                questions:".questions.buckets",	// = tableau de .key (question_id)
-                nb_change_per_quest:".doc_count",
-                max_time:".max_time.hits.hits",	// .max_time.hits.hits[0].fields : prendre 1ère  valeur du tableau hits.hits[]
-                max_time_val:".fields.max_time",// temps où user à terminé une question
-                min_time:".min_time.hits.hits",	//.min_time.hits.hits[0].fields : prendre 1ère  valeur du tableau hits.hits[]
-                min_time_val:".fields.timestamp",	// temps où user à commencé une question
-                score_scaled:".fields.score_scaled"}	//score de user à une question
-        );
+             {
+                 users: "aggregations.users.buckets",// = tableau de .key (user_id)
+                 nb_change_tot: ".doc_count",
+                 questions: ".questions.buckets",	// = tableau de .key (question_id)
+                 nb_change_per_quest: ".doc_count",
+                 max_time: ".max_time.hits.hits",	// .max_time.hits.hits[0].fields : prendre 1ère  valeur du tableau hits.hits[]
+                 max_time_val: ".fields.max_time",// temps où user à terminé une question
+                 min_time: ".min_time.hits.hits",	//.min_time.hits.hits[0].fields : prendre 1ère  valeur du tableau hits.hits[]
+                 min_time_val: ".fields.timestamp",	// temps où user à commencé une question
+                 score_scaled: ".fields.score_scaled"
+             }	//score de user à une question
+         );
 
-        vAvg_user_bio.plotMe=dashboard.plotBar;
-        vAvg_user_bio.query_size={nb_user:800, nb_quest:300};	// inutile si déjà dans query ?
-        // variable à remettre dans constructeur ?
+         vAvg_user_bio.plotMe = dashboard.plotBar;
+         vAvg_user_bio.query_size = {nb_user: 800, nb_quest: 300};	// inutile si déjà dans query ?
+         // variable à remettre dans constructeur ?
 
-        vAvg_user_bio.yData ={	//nb changement, temps de réponse, score
-            //users:[],	// liste des users
-            questions:[],	// listes des questions répondue pour chaque user
-            nb_change_tot:[],	// nombre de changement de réponses totales sur un questionnaire pour chaque user
-            nb_change:[],	// nombre de changement de réponses pour chaque question répondue, pour chaque user
-            avg_nb_change:[],	// moyenne de changement de réponse par user
-            stdev_nb_change:[],	// écart type de changement de réponse apr user
-            max_time:[],	// temps de la dernière réponse pour chaque question répondue, pour chaque user
-            min_time:[],	//temps de la première réponse pour chaque question répondue, pour chaque user
-            delta_time:[],	//temps de réponse pour chaque question répondue, pour chaque user
-            avg_time:[],		//temps moyen de réponse pour chaque question répondue, pour chaque user
-            stdev_time:[],	//écart type de changement de réponse par uset
-            pre_score_scaled:[],	//score de chaque question répondue, pour chaque user
-            avg_score_scaled:[],	//score moyen d'un questionnaire, pour chaque user
-            stdev_score_scaled:[]	//score moyen d'un questionnaire, pour chaque user
-        };
+         vAvg_user_bio.yData = {	//nb changement, temps de réponse, score
+             //users:[],	// liste des users
+             questions: [],	// listes des questions répondue pour chaque user
+             nb_change_tot: [],	// nombre de changement de réponses totales sur un questionnaire pour chaque user
+             nb_change: [],	// nombre de changement de réponses pour chaque question répondue, pour chaque user
+             avg_nb_change: [],	// moyenne de changement de réponse par user
+             stdev_nb_change: [],	// écart type de changement de réponse apr user
+             max_time: [],	// temps de la dernière réponse pour chaque question répondue, pour chaque user
+             min_time: [],	//temps de la première réponse pour chaque question répondue, pour chaque user
+             delta_time: [],	//temps de réponse pour chaque question répondue, pour chaque user
+             avg_time: [],		//temps moyen de réponse pour chaque question répondue, pour chaque user
+             stdev_time: [],	//écart type de changement de réponse par uset
+             pre_score_scaled: [],	//score de chaque question répondue, pour chaque user
+             avg_score_scaled: [],	//score moyen d'un questionnaire, pour chaque user
+             stdev_score_scaled: [],	//score moyen d'un questionnaire, pour chaque user
+             data_frame_score:{avg_score:[], median_score:[], quartile1_score:[], quartile3_score:[]},
+             data_frame_nb_change:{avg_change:[], median_change:[], quartile1_change:[], quartile3_change:[]},
+             data_frame_time:{avg_time:[], median_time:[], quartile1_time:[], quartile3_time:[]}
+         };
 
-        vAvg_user_bio.set_yData= function(data_response) {
+         vAvg_user_bio.set_yData = function (data_response) {
 
-            //DATA.aggregations.users.buckets[]
-            var toFormat_data=dashboard.get_obj_path_value(data_response,vAvg_user_bio.data_path.users);
+             //DATA.aggregations.users.buckets[]
+             var toFormat_data = dashboard.get_obj_path_value(data_response, vAvg_user_bio.data_path.users);
 
-            for(var i=0, nb_user=toFormat_data.length; i<nb_user;i++){	// pour chaque user faire
-                var data= toFormat_data[i];
+             for (var i = 0, nb_user = toFormat_data.length; i < nb_user; i++) {	// pour chaque user faire
+                 var data = toFormat_data[i];
 
-                //DATA.aggregations.users.buckets[].key = user_id
-                vAvg_user_bio.xData[i]=data.key;
+                 //DATA.aggregations.users.buckets[].key = user_id
+                 vAvg_user_bio.xData[i] = data.key;
 
-                //DATA.aggregations.users.buckets[].question_id = nb tentatives totales de user
-                vAvg_user_bio.yData.nb_change_tot[i]=data.doc_count;
+                 //DATA.aggregations.users.buckets[].question_id = nb tentatives totales de user
+                 vAvg_user_bio.yData.nb_change_tot[i] = data.doc_count;
 
-                //DATA.aggregations.users.buckets[].length = nb questions répondu par user
-                var nb_quest= data.questions.buckets.length;
+                 //DATA.aggregations.users.buckets[].length = nb questions répondu par user
+                 var nb_quest = data.questions.buckets.length;
 
-                var temp_questions=[], temp_nb_change=[], temp_max_time=[], temp_min_time=[], temp_delta_time=[], temp_pre_score_scaled=[];
+                 var temp_questions = [], temp_nb_change = [], temp_max_time = [], temp_min_time = [],
+                     temp_delta_time = [], temp_pre_score_scaled = [];
 
-                for(var j=0; j<nb_quest;j++){	// pour chaque question répondu par user faire
-                    //DATA.aggregations.questions.buckets[].questions.buckets[].
-                    var nested_data=data.questions.buckets[j];
+                 for (var j = 0; j < nb_quest; j++) {	// pour chaque question répondu par user faire
+                     //DATA.aggregations.questions.buckets[].questions.buckets[].
+                     var nested_data = data.questions.buckets[j];
 
-                    //DATA.aggregations.questions.buckets[].questions.buckets[].doc_count = nb de changement de user pour une question
-                    //vAvg_user_bio.yData.nb_change[i][j]=nested_data.doc_count;
-                    temp_nb_change.push(nested_data.doc_count);
+                     //DATA.aggregations.questions.buckets[].questions.buckets[].doc_count = nb de changement de user pour une question
+                     //vAvg_user_bio.yData.nb_change[i][j]=nested_data.doc_count;
+                     temp_nb_change.push(nested_data.doc_count);
 
-                    //DATA.aggregations.questions.buckets[].questions.buckets[].max_time.hits.hits[0].fields.timestamp[0] = temps de la dernière réponse à une question
-                    //vAvg_user_bio.yData.max_time[i][j]=nested_data.max_time.hits.hits[0].fields.timestamp[0];
-                    temp_max_time.push(nested_data.max_time.hits.hits[0].fields.timestamp[0]);
+                     //DATA.aggregations.questions.buckets[].questions.buckets[].max_time.hits.hits[0].fields.timestamp[0] = temps de la dernière réponse à une question
+                     //vAvg_user_bio.yData.max_time[i][j]=nested_data.max_time.hits.hits[0].fields.timestamp[0];
+                     temp_max_time.push(nested_data.max_time.hits.hits[0].fields.timestamp[0]);
 
-                    //DATA.aggregations.questions.buckets[].questions.buckets[].min_time.hits.hits[0].fields.timestamp[0] = temps de la première réponse à une question
-                    //vAvg_user_bio.yData.min_time[i][j]=nested_data.min_time.hits.hits[0].fields.timestamp[0];
-                    temp_min_time.push(nested_data.min_time.hits.hits[0].fields.timestamp[0]);
+                     //DATA.aggregations.questions.buckets[].questions.buckets[].min_time.hits.hits[0].fields.timestamp[0] = temps de la première réponse à une question
+                     //vAvg_user_bio.yData.min_time[i][j]=nested_data.min_time.hits.hits[0].fields.timestamp[0];
+                     temp_min_time.push(nested_data.min_time.hits.hits[0].fields.timestamp[0]);
 
-                    //DATA.aggregations.questions.buckets[].questions.buckets[].max_time.hits.hits[0].fields.timestamp[0] = score de la dernière réponse à une question
-                    //vAvg_user_bio.yData.pre_score_scaled[i][j]=nested_data.max_time.hits.hits[0].fields.score_scaled[0];
-                    temp_pre_score_scaled.push(nested_data.max_time.hits.hits[0].fields.score_scaled[0]);
+                     //DATA.aggregations.questions.buckets[].questions.buckets[].max_time.hits.hits[0].fields.timestamp[0] = score de la dernière réponse à une question
+                     //vAvg_user_bio.yData.pre_score_scaled[i][j]=nested_data.max_time.hits.hits[0].fields.score_scaled[0];
+                     temp_pre_score_scaled.push(nested_data.max_time.hits.hits[0].fields.score_scaled[0]);
 
-                }
-                vAvg_user_bio.yData.questions.push(temp_questions);
-                vAvg_user_bio.yData.nb_change.push(temp_nb_change);
-                vAvg_user_bio.yData.max_time.push(temp_max_time);
-                vAvg_user_bio.yData.min_time.push(temp_min_time);
-                vAvg_user_bio.yData.delta_time.push(temp_delta_time);
-                vAvg_user_bio.yData.pre_score_scaled.push(temp_pre_score_scaled);
-            }
+                 }
+                 vAvg_user_bio.yData.questions.push(temp_questions);
+                 vAvg_user_bio.yData.nb_change.push(temp_nb_change);
+                 vAvg_user_bio.yData.max_time.push(temp_max_time);
+                 vAvg_user_bio.yData.min_time.push(temp_min_time);
+                 vAvg_user_bio.yData.delta_time.push(temp_delta_time);
+                 vAvg_user_bio.yData.pre_score_scaled.push(temp_pre_score_scaled);
+             }
 
-            vAvg_user_bio.yData.delta_time=dashboard.calc_delta_time(vAvg_user_bio.yData.max_time,vAvg_user_bio.yData.min_time); //delta_time= max_time-min_time
+             vAvg_user_bio.yData.delta_time = dashboard.calc_nested_delta_time(vAvg_user_bio.yData.max_time, vAvg_user_bio.yData.min_time); //delta_time= max_time-min_time
 
-            vAvg_user_bio.yData.avg_time=dashboard.calc_avg_nested(vAvg_user_bio.yData.delta_time);
-            vAvg_user_bio.yData.avg_time=dashboard.calc_milis_to_min(vAvg_user_bio.yData.avg_time); // convert to second
+             vAvg_user_bio.yData.avg_time = dashboard.calc_avg_nested(vAvg_user_bio.yData.delta_time);
+             vAvg_user_bio.yData.avg_time = dashboard.calc_milis_to_min(vAvg_user_bio.yData.avg_time); // convert to second
 
-            vAvg_user_bio.yData.stdev_time=dashboard.calc_unbiaised_stdev_nested(vAvg_user_bio.yData.delta_time);
-            vAvg_user_bio.yData.stdev_time=dashboard.calc_milis_to_min(vAvg_user_bio.yData.avg_time);   // convert to sec
+             vAvg_user_bio.yData.stdev_time = dashboard.calc_unbiaised_stdev_nested(vAvg_user_bio.yData.delta_time);
+             vAvg_user_bio.yData.stdev_time = dashboard.calc_milis_to_min(vAvg_user_bio.yData.avg_time);   // convert to sec
 
-            vAvg_user_bio.yData.avg_nb_change=dashboard.calc_avg_nested(vAvg_user_bio.yData.nb_change);
-            vAvg_user_bio.yData.stdev_nb_change=dashboard.calc_unbiaised_stdev_nested(vAvg_user_bio.yData.nb_change);
+             vAvg_user_bio.yData.avg_nb_change = dashboard.calc_avg_nested(vAvg_user_bio.yData.nb_change);
+             vAvg_user_bio.yData.stdev_nb_change = dashboard.calc_unbiaised_stdev_nested(vAvg_user_bio.yData.nb_change);
 
-            // vAvg_user_bio.yData.pre_score_scaled.forEach(function(temp){alert(temp);});
-            vAvg_user_bio.yData.avg_score_scaled=dashboard.calc_avg_nested(vAvg_user_bio.yData.pre_score_scaled);
-            vAvg_user_bio.yData.avg_score_scaled.sort();
-            vAvg_user_bio.yData.avg_score_scaled.reverse();
-            vAvg_user_bio.yData.stdev_score_scaled=dashboard.calc_unbiaised_stdev_nested(vAvg_user_bio.yData.pre_score_scaled);
+             // vAvg_user_bio.yData.pre_score_scaled.forEach(function(temp){alert(temp);});
+             vAvg_user_bio.yData.avg_score_scaled = dashboard.calc_avg_nested(vAvg_user_bio.yData.pre_score_scaled);
+             // vAvg_user_bio.yData.avg_score_scaled.sort();
+             //vAvg_user_bio.yData.avg_score_scaled.reverse();
+             vAvg_user_bio.yData.stdev_score_scaled = dashboard.calc_unbiaised_stdev_nested(vAvg_user_bio.yData.pre_score_scaled);
 
-            vAvg_user_bio.yMean=dashboard.calc_avg(vAvg_user_bio.yData.avg_score_scaled);
-            vAvg_user_bio.yStdev=dashboard.calc_unbiaised_stdev(vAvg_user_bio.yData.avg_score_scaled);  //= écart-type de la moyenne des score par utilisateurs
-            // != écart type des écarts type du score au questionnaire d'un user
+             vAvg_user_bio.yMean = dashboard.calc_avg(vAvg_user_bio.yData.avg_score_scaled);
+             vAvg_user_bio.yStdev = dashboard.calc_unbiaised_stdev(vAvg_user_bio.yData.avg_score_scaled);  //= écart-type de la moyenne des score par utilisateurs
+             // != écart type des écarts type du score au questionnaire d'un user
 
-            vAvg_user_bio.query_size.nb_user=vAvg_user_bio.xData.length;
+             vAvg_user_bio.query_size.nb_user = vAvg_user_bio.xData.length;
 
 
+         }; // function bio
 
-        }; // function bio
+         dashboard.send_Xhr(dashboard.readData, vAvg_user_bio);
 
-        dashboard.send_Xhr(dashboard.readData, vAvg_user_bio);
+         dashboard.graphs.push(vAvg_user_bio);	// ajout du graph dans a liste de graphs
 
-        dashboard.graphs.push(vAvg_user_bio);	// ajout du graph dans a liste de graphs
-
+     },
 
 // ******************** Questionnaire de physique ***********************
+
+        init_vAvg_quest_phy :function () {
+
         var vAvg_quest_phy = new dashboard.graph_data(dashboard.query_list.avg_quest_phy,
-            "étudiant",
+            "Question",
             "Score moyen d'une question de physique",
             "Score moyen au questionnaire de physique",
             "bar_avg_quest_phy",
@@ -662,7 +693,10 @@ var dashboard = {
             stdev_time:[],	//écart type de changement de réponse par uset
             pre_score_scaled:[],	//score de chaque question répondue, pour chaque user
             avg_score_scaled:[],	//score moyen d'un questionnaire, pour chaque user
-            stdev_score_scaled:[]	//score moyen d'un questionnaire, pour chaque user
+            stdev_score_scaled:[],	//score moyen d'un questionnaire, pour chaque user
+            data_frame_score:{avg_score:[], median_score:[], quartile1_score:[], quartile3_score:[], max_score:[]},
+            data_frame_nb_change:{avg_change:[], median_change:[], quartile1_change:[], quartile3_change:[],max_change:[]},
+            data_frame_time:{avg_time:[], median_time:[], quartile1_time:[], quartile3_time:[],max_time:[]}
         };
 
         vAvg_quest_phy.set_yData= function(data_response) {
@@ -707,18 +741,40 @@ var dashboard = {
                 }
                 vAvg_quest_phy.yData.users.push(temp_users);
                 vAvg_quest_phy.yData.nb_change.push(temp_nb_change);
-                //console.log(temp_nb_change);
+                // Data frame nb change
+                vAvg_quest_phy.yData.data_frame_nb_change.median_change.push(dashboard.quantile(temp_nb_change,50));//median de la question
+                vAvg_quest_phy.yData.data_frame_nb_change.quartile1_change.push(dashboard.quantile(temp_nb_change,25)) ;// 1er quartile de la question
+                vAvg_quest_phy.yData.data_frame_nb_change.quartile3_change.push(dashboard.quantile(temp_nb_change,75)) ;  //3ème quartile de la question
+                vAvg_quest_phy.yData.data_frame_nb_change.max_change.push(dashboard.quantile(temp_nb_change,100));  //3ème quartile de la question
+
                 vAvg_quest_phy.yData.max_time.push(temp_max_time);
                 vAvg_quest_phy.yData.min_time.push(temp_min_time);
+
+                temp_delta_time=dashboard.calc_delta_time(temp_max_time,temp_min_time);
+                temp_delta_time=dashboard.calc_milis_to_min(temp_delta_time); // convert to sec
+
+                // Data frame delta time
+                vAvg_quest_phy.yData.data_frame_time.median_time.push(dashboard.quantile(temp_delta_time,50));//median de la question
+                vAvg_quest_phy.yData.data_frame_time.quartile1_time.push(dashboard.quantile(temp_delta_time,25)) ;// 1er quartile de la question
+                vAvg_quest_phy.yData.data_frame_time.quartile3_time.push(dashboard.quantile(temp_delta_time,75)) ;  //3ème quartile de la question
+                vAvg_quest_phy.yData.data_frame_time.max_time.push(dashboard.quantile(temp_delta_time,100));  //3ème quartile de la question
+
 
                 //vAvg_quest_phy.yData.delta_time.push(temp_delta_time);
                 //console.log(temp_delta_time);
                 vAvg_quest_phy.yData.pre_score_scaled.push(temp_pre_score_scaled);
+
+                // Data frame score
+                console.log(temp_pre_score_scaled);
+                vAvg_quest_phy.yData.data_frame_score.median_score.push(dashboard.quantile(temp_pre_score_scaled,50));//median de la question
+                vAvg_quest_phy.yData.data_frame_score.quartile3_score.push(dashboard.quantile(temp_pre_score_scaled,25)) ;// 1er quartile de la question
+                vAvg_quest_phy.yData.data_frame_score.quartile3_score.push(dashboard.quantile(temp_pre_score_scaled,75)) ;  //3ème quartile de la question
+                vAvg_quest_phy.yData.data_frame_score.max_score.push(dashboard.quantile(temp_pre_score_scaled,100));  //3ème quartile de la question
             }
 
 
             // temps de réponse d'un étudiant pour chaque question d'un questionnaire
-            vAvg_quest_phy.yData.delta_time=dashboard.calc_delta_time(vAvg_quest_phy.yData.max_time,vAvg_quest_phy.yData.min_time); //delta_time= max_time-min_time
+            vAvg_quest_phy.yData.delta_time=dashboard.calc_nested_delta_time(vAvg_quest_phy.yData.max_time,vAvg_quest_phy.yData.min_time); //delta_time= max_time-min_time
             //console.log(vAvg_quest_phy.yData.delta_time);
             // moyenne du temps de réponse d'un étudiant sur tout un questionnaire
             vAvg_quest_phy.yData.avg_time=dashboard.calc_avg_nested(vAvg_quest_phy.yData.delta_time);
@@ -733,15 +789,15 @@ var dashboard = {
 
             // nombre moyen de changement de réponse par étudiant sur tout un questionnaire
             vAvg_quest_phy.yData.avg_nb_change=dashboard.calc_avg_nested(vAvg_quest_phy.yData.nb_change);
-            vAvg_quest_phy.yData.avg_nb_change.sort();
-            vAvg_quest_phy.yData.avg_nb_change.reverse();
+            // vAvg_quest_phy.yData.avg_nb_change.sort();
+            // vAvg_quest_phy.yData.avg_nb_change.reverse();
             //console.log(vAvg_quest_phy.yData.avg_nb_change);
             vAvg_quest_phy.yData.stdev_nb_change=dashboard.calc_unbiaised_stdev_nested(vAvg_quest_phy.yData.nb_change);
 
             // score moyen d'un utilisateur sur tout un questionnaire
             vAvg_quest_phy.yData.avg_score_scaled=dashboard.calc_avg_nested(vAvg_quest_phy.yData.pre_score_scaled);
-            vAvg_quest_phy.yData.avg_score_scaled.sort();
-            vAvg_quest_phy.yData.avg_score_scaled.reverse();
+            // vAvg_quest_phy.yData.avg_score_scaled.sort();
+            //vAvg_quest_phy.yData.avg_score_scaled.reverse();
             vAvg_quest_phy.yData.stdev_score_scaled=dashboard.calc_unbiaised_stdev_nested(vAvg_quest_phy.yData.pre_score_scaled);
 
             vAvg_quest_phy.yMean=dashboard.calc_avg(vAvg_quest_phy.yData.avg_score_scaled);
@@ -750,6 +806,13 @@ var dashboard = {
 
             vAvg_quest_phy.query_size.nb_user=vAvg_quest_phy.xData.length;
 
+
+            // Construct data frame
+
+            // Data frame
+            vAvg_quest_phy.yData.data_frame_score.avg_score=vAvg_quest_phy.yData.avg_score_scaled;
+            vAvg_quest_phy.yData.data_frame_nb_change.avg_change=vAvg_quest_phy.yData.avg_nb_change;
+            vAvg_quest_phy.yData.data_frame_time.avg_time=vAvg_quest_phy.yData.avg_time;
 
 
         }; // function set yData phy
@@ -760,7 +823,9 @@ var dashboard = {
                 title:"Nombre moyen de changements de réponse par question au questionnaire de physique"},
             {DOM_id:"bar_avg_quest_phy_deltaT", yData:"avg_time",xlabel:"Question", ylabel:"Temps moyen de réponse à une question (en seconde)",
                 title:"Temps moyen de réponse par question au questionnaire de physique (en seconde)"}
+
         ];
+            console.log(vAvg_quest_phy);
 
         dashboard.send_Xhr(dashboard.readData, vAvg_quest_phy);
 
@@ -969,6 +1034,10 @@ dashboard.plotBar= function(graph_data, tab_to_plot){
 
 dashboard.plot_quest= function(graph_data){
 
+    var index=[];
+    for (var i = 0; i <= graph_data.xData.length-1; i++) {
+        index.push(i);
+    }
     // vAvg_quest_phy.yData ={	//nb changement, temps de réponse, score
     //     //users:[],	// liste des users
     //     users:[],	// listes des questions répondue pour chaque user
@@ -997,17 +1066,45 @@ dashboard.plot_quest= function(graph_data){
     var temp_data=graph_data.yData.avg_score_scaled;
 
     var temp_data_to_plot={
-        y:temp_data,
-        name:"Score moyen d'une question au questionnaire",
+        x:index,
+        y:graph_data.yData.data_frame_score.max_score,
+        name:"Score maximale d'une question au questionnaire",
         type:'bar'
     };
 
     data_score_avg.push(temp_data_to_plot);
 
+    var temp_data_median={
+        x:index,
+        y:graph_data.yData.data_frame_score.median_score,
+        name:"Médiane du score d'une question au questionnaire",
+        type:'bar'
+    };
+
+    data_score_avg.push(temp_data_median);
+
+    var temp_data_quart1={
+        x:index,
+        y:graph_data.yData.data_frame_score.median_score,
+        name:"1er quartile du score d'une question au questionnaire",
+        type:'bar'
+    };
+
+    data_score_avg.push(temp_data_quart1);
+
+    var temp_data_quart3={
+        x:index,
+        y:graph_data.yData.data_frame_score.median_score,
+        name:"3ème quartile du score d'une question au questionnaire",
+        type:'bar'
+    };
+
+    data_score_avg.push(temp_data_quart3);
+
     var mean_line={
             name:graph_data.yMean_label,
             type:'lines',
-            x:[0,graph_data.yData.avg_score_scaled.length],
+            x:[0,graph_data.yData.avg_score_scaled.length-1],
             y:[graph_data.yMean,graph_data.yMean],	// moyenne - écart type corrigée
             marker: {         // marker is an object, valid marker keys: #scatter-marker
                 color: 'rgb(255,140,0)'
@@ -1018,7 +1115,7 @@ dashboard.plot_quest= function(graph_data){
         var stdev_upper_line={
             name:graph_data.yMean_label + ' +' + graph_data.yStdev_label,
             type:'lines',
-            x:[0,graph_data.yData.avg_score_scaled.length],
+            x:[0,graph_data.yData.avg_score_scaled.length-1],
             y:[graph_data.yMean+graph_data.yStdev,graph_data.yMean+graph_data.yStdev],	// moyenne - écart type corrigée
             marker: {         // marker is an object, valid marker keys: #scatter-marker
                 color: 'rgb(51,255,51)'
@@ -1029,7 +1126,7 @@ dashboard.plot_quest= function(graph_data){
         var stdev_lower_line={
             name:graph_data.yMean_label + ' -' + graph_data.yStdev_label,
             type:'lines',
-            x:[0,graph_data.yData.avg_score_scaled.length],
+            x:[0,graph_data.yData.avg_score_scaled.length-1],
             y:[graph_data.yMean-graph_data.yStdev,graph_data.yMean-graph_data.yStdev],	// moyenne - écart type corrigée
             marker: {         // marker is an object, valid marker keys: #scatter-marker
                 color: 'rgb(255,51,51)'
@@ -1039,6 +1136,7 @@ dashboard.plot_quest= function(graph_data){
 
     // Layout
     var layout = {
+        barmode:'relative',
         title: graph_data.title,
         showlegend: true,
         yaxis: {range: [0,1],
@@ -1051,29 +1149,56 @@ dashboard.plot_quest= function(graph_data){
 
 
 
-//****************** Plot nb changement *********************
+//****************** PLOT nb changement *********************
 
     var data_nb_change_avg=[];
     temp_data=graph_data.yData.avg_nb_change;
 
     temp_data_to_plot={
-        y:temp_data,
-        name:"Nombre moyen de changement à une question au questionnaire",
+        x:index,
+        y:graph_data.yData.data_frame_nb_change.max_change,
+        name:"Nombre de changements de réponse maximale d'une question au questionnaire",
         type:'bar'
     };
 
     data_nb_change_avg.push(temp_data_to_plot);
 
+    temp_data_median={
+        x:index,
+        y:graph_data.yData.data_frame_nb_change.median_change,
+        name:"Médiane du nombre de changements de réponse à une question au questionnaire",
+        type:'bar'
+    };
+
+    data_nb_change_avg.push(temp_data_median);
+
+    temp_data_quart1={
+        x:index,
+        y:graph_data.yData.data_frame_nb_change.quartile1_change,
+        name:"1er quartile du nombre de changements de réponse à une question au questionnaire",
+        type:'bar'
+    };
+
+    data_nb_change_avg.push(temp_data_quart1);
+
+    temp_data_quart3={
+        x:index,
+        y:graph_data.yData.data_frame_nb_change.quartile3_change,
+        name:"3ème quartile du nombre de changements de réponse à une question au questionnaire",
+        type:'bar'
+    };
+
+    data_nb_change_avg.push(temp_data_quart3);
+
     var mean_label ="Nombre moyen total de changements de réponse au questionnaire de physique";
     var mean_value=dashboard.calc_avg(graph_data.yData.avg_nb_change);
     var std_value=dashboard.calc_unbiaised_stdev(graph_data.yData.avg_nb_change);
 
-    alert(std_value);
-    alert(mean_value);
+
     mean_line={
         name:mean_label,
         type:'lines',
-        x:[0,graph_data.yData.avg_nb_change.length],
+        x:[0,graph_data.yData.avg_nb_change.length-1],
         y:[mean_value,mean_value],	// moyenne
         marker: {         // marker is an object, valid marker keys: #scatter-marker
             color: 'rgb(255,140,0)'
@@ -1082,9 +1207,9 @@ dashboard.plot_quest= function(graph_data){
     data_nb_change_avg.push(mean_line);	// add to plotly
 
     stdev_upper_line={
-        name:graph_data.yMean_label + ' +' + graph_data.yStdev_label,
+        name:mean_label + ' +' + graph_data.yStdev_label,
         type:'lines',
-        x:[0,graph_data.yData.avg_nb_change.length],
+        x:[0,graph_data.yData.avg_nb_change.length-1],
         y:[mean_value+std_value, mean_value+std_value ],	// moyenne - écart type corrigée
         marker: {         // marker is an object, valid marker keys: #scatter-marker
             color: 'rgb(51,255,51)'
@@ -1093,9 +1218,9 @@ dashboard.plot_quest= function(graph_data){
     data_nb_change_avg.push(stdev_upper_line);	//add to plotly
 
     stdev_lower_line={
-        name:graph_data.yMean_label + ' -' + graph_data.yStdev_label,
+        name: mean_label + ' -' + graph_data.yStdev_label,
         type:'lines',
-        x:[0,graph_data.yData.avg_nb_change.length],
+        x:[0,graph_data.yData.avg_nb_change.length-1],
         y:[mean_value-std_value, mean_value-std_value ],	// moyenne - écart type corrigée
         marker: {         // marker is an object, valid marker keys: #scatter-marker
             color: 'rgb(255,51,51)'
@@ -1105,6 +1230,7 @@ dashboard.plot_quest= function(graph_data){
 
     // Layout
     layout = {
+        barmode:'relative',
         title: "Nombre moyen de changements de réponse par question au questionnaire de physique",
         showlegend: true,
         yaxis: {title:"Nombre moyen de changements de réponse à une question"},	// setting manual range of axes
@@ -1122,21 +1248,50 @@ dashboard.plot_quest= function(graph_data){
     temp_data=graph_data.yData.avg_time;
 
     temp_data_to_plot={
-        y:temp_data,
-        name:"Temps moyen de réponse à une question au questionnaire",
+        x:index,
+        y:graph_data.yData.data_frame_time.max_time,
+        name:"Temps de réponse maximale d'une question au questionnaire",
         type:'bar'
     };
 
     data_deltaT_avg.push(temp_data_to_plot);
 
-    mean_label ="Nombre moyen total de changements de réponse au questionnaire de physique";
+    temp_data_median={
+        x:index,
+        y:graph_data.yData.data_frame_time.median_time,
+        name:"Médiane du temps de réponse à une question au questionnaire",
+        type:'bar'
+    };
+
+    data_deltaT_avg.push(temp_data_median);
+
+    temp_data_quart1={
+        x:index,
+        y:graph_data.yData.data_frame_time.quartile1_time,
+        name:"1er quartile du temps de réponse à une question au questionnaire",
+        type:'bar'
+    };
+
+    data_deltaT_avg.push(temp_data_quart1);
+
+    temp_data_quart3={
+        x:index,
+        y:graph_data.yData.data_frame_time.quartile3_time,
+        name:"3ème quartile du temps de réponse à une question au questionnaire",
+        type:'bar'
+    };
+
+    data_deltaT_avg.push(temp_data_quart3);
+
+
+    mean_label ="Temps moyen de réponse au questionnaire de physique";
     mean_value=dashboard.calc_avg(temp_data);
     std_value=dashboard.calc_unbiaised_stdev(temp_data);
 
     mean_line={
         name:mean_label,
         type:'lines',
-        x:[0,temp_data.length],
+        x:[0,temp_data.length-1],
         y:[mean_value,mean_value],	// moyenne
         marker: {         // marker is an object, valid marker keys: #scatter-marker
             color: 'rgb(255,140,0)'
@@ -1145,9 +1300,9 @@ dashboard.plot_quest= function(graph_data){
     data_deltaT_avg.push(mean_line);	// add to plotly
 
     stdev_upper_line={
-        name:graph_data.yMean_label + ' +' + graph_data.yStdev_label,
+        name:mean_label + ' +' + graph_data.yStdev_label,
         type:'lines',
-        x:[0,graph_data.yData.avg_nb_change.length],
+        x:[0,graph_data.yData.avg_nb_change.length-1],
         y:[mean_value+std_value, mean_value+std_value ],	// moyenne - écart type corrigée
         marker: {         // marker is an object, valid marker keys: #scatter-marker
             color: 'rgb(51,255,51)'
@@ -1156,9 +1311,9 @@ dashboard.plot_quest= function(graph_data){
     data_deltaT_avg.push(stdev_upper_line);	//add to plotly
 
     stdev_lower_line={
-        name:graph_data.yMean_label + ' -' + graph_data.yStdev_label,
+        name:mean_label + ' -' + graph_data.yStdev_label,
         type:'lines',
-        x:[0,graph_data.yData.avg_nb_change.length],
+        x:[0,graph_data.yData.avg_nb_change.length-1],
         y:[mean_value-std_value, mean_value-std_value ],	// moyenne - écart type corrigée
         marker: {         // marker is an object, valid marker keys: #scatter-marker
             color: 'rgb(255,51,51)'
@@ -1168,7 +1323,8 @@ dashboard.plot_quest= function(graph_data){
 
     // Layout
     layout = {
-        title: "Nombre moyen de réponse au questionnaire de physique",
+        barmode:'relative',
+        title: "Temps moyen de réponse au questionnaire de physique",
         showlegend: true,
         yaxis: {title:"Temps moyen de réponse à une question"},	// setting manual range of axes
         xaxis: {title:"Question"}	// setting manual range of axes
@@ -1184,6 +1340,17 @@ dashboard.plot_quest= function(graph_data){
 };//end function plot
 
 dashboard.calc_delta_time= function(tab1, tab2){
+	var delta_time=[];
+
+
+        for (var j = 0; j < tab1.length; j++) {
+            delta_time.push(Math.abs(tab1[j] - tab2[j]));
+        }
+
+	return delta_time;
+};
+
+dashboard.calc_nested_delta_time= function(tab1, tab2){
 	var delta_time=[];
 
 	for(var i=0; i<tab1.length;i++) {
@@ -1286,7 +1453,43 @@ dashboard.sort_by_key = function(graph_data, key){// construit le data frame pou
 
 };
 
+dashboard.getMedian=function(arrOfNums) {
+    var result =0;
+    var sortedArr = arrOfNums.sort(function(num1, num2) {
+        return num1 - num2;
+    });
+
+    var medianIndex = Math.floor(sortedArr.length / 2);
+    if (arrOfNums.length % 2 === 0) {
+        result=(sortedArr[medianIndex-1] + sortedArr[medianIndex]) / 2;
+        return result;
+    } else {
+        result=(sortedArr[medianIndex]);
+        return result;
+    }
+};
+
+dashboard.sortNumber=function(a,b) {
+    return a - b;
+}
+
+dashboard.quantile=function(array, percentile) {
+    array.sort(dashboard.sortNumber);
+    index = percentile/100. * (array.length-1);
+    if (Math.floor(index) == index) {
+        result = array[index];
+    } else {
+        i = Math.floor(index)
+        fraction = index - i;
+        result = array[i] + (array[i+1] - array[i]) * fraction;
+    }
+    return result;
+}
+
+
 ////
-window.addEventListener("load", dashboard.init);
+//window.addEventListener("load", dashboard.init_vAvg_user_phy);    // -> move to *.html
+//window.addEventListener("load", dashboard.init_vAvg_user_bio);    // -> move to *.html
+window.addEventListener("load", dashboard.init_vAvg_quest_phy);     // -> move to *.html
 
 

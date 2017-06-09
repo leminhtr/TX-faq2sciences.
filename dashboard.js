@@ -1067,39 +1067,40 @@ dashboard.plot_quest= function(graph_data){
 
     var temp_data_to_plot={
         x:index,
-        y:graph_data.yData.data_frame_score.max_score,
-        name:"Score maximale d'une question au questionnaire",
+        y:graph_data.yData.data_frame_score.avg_score,
+        name:"Score moyen d'une question au questionnaire",
         type:'bar'
     };
 
+
+    // var temp_data_median={
+    //     x:index,
+    //     y:graph_data.yData.data_frame_score.median_score,
+    //     name:"Médiane du score d'une question au questionnaire",
+    //     type:'bar'
+    // };
+
+
+    // var temp_data_quart1={
+    //     x:index,
+    //     y:graph_data.yData.data_frame_score.median_score,
+    //     name:"1er quartile du score d'une question au questionnaire",
+    //     type:'bar'
+    // };
+
+
+    // var temp_data_quart3={
+    //     x:index,
+    //     y:graph_data.yData.data_frame_score.median_score,
+    //     name:"3ème quartile du score d'une question au questionnaire",
+    //     type:'bar'
+    // };
+
+    // data_score_avg.push(temp_data_quart1);
+    // data_score_avg.push(temp_data_median);
+    // data_score_avg.push(temp_data_quart3);
     data_score_avg.push(temp_data_to_plot);
 
-    var temp_data_median={
-        x:index,
-        y:graph_data.yData.data_frame_score.median_score,
-        name:"Médiane du score d'une question au questionnaire",
-        type:'bar'
-    };
-
-    data_score_avg.push(temp_data_median);
-
-    var temp_data_quart1={
-        x:index,
-        y:graph_data.yData.data_frame_score.median_score,
-        name:"1er quartile du score d'une question au questionnaire",
-        type:'bar'
-    };
-
-    data_score_avg.push(temp_data_quart1);
-
-    var temp_data_quart3={
-        x:index,
-        y:graph_data.yData.data_frame_score.median_score,
-        name:"3ème quartile du score d'une question au questionnaire",
-        type:'bar'
-    };
-
-    data_score_avg.push(temp_data_quart3);
 
     var mean_line={
             name:graph_data.yMean_label,
@@ -1136,7 +1137,7 @@ dashboard.plot_quest= function(graph_data){
 
     // Layout
     var layout = {
-        barmode:'relative',
+        barmode:'group',
         title: graph_data.title,
         showlegend: true,
         yaxis: {range: [0,1],
@@ -1161,7 +1162,6 @@ dashboard.plot_quest= function(graph_data){
         type:'bar'
     };
 
-    data_nb_change_avg.push(temp_data_to_plot);
 
     temp_data_median={
         x:index,
@@ -1170,7 +1170,6 @@ dashboard.plot_quest= function(graph_data){
         type:'bar'
     };
 
-    data_nb_change_avg.push(temp_data_median);
 
     temp_data_quart1={
         x:index,
@@ -1179,7 +1178,6 @@ dashboard.plot_quest= function(graph_data){
         type:'bar'
     };
 
-    data_nb_change_avg.push(temp_data_quart1);
 
     temp_data_quart3={
         x:index,
@@ -1188,7 +1186,10 @@ dashboard.plot_quest= function(graph_data){
         type:'bar'
     };
 
+    data_nb_change_avg.push(temp_data_quart1);
+	data_nb_change_avg.push(temp_data_median);
     data_nb_change_avg.push(temp_data_quart3);
+    data_nb_change_avg.push(temp_data_to_plot);
 
     var mean_label ="Nombre moyen total de changements de réponse au questionnaire de physique";
     var mean_value=dashboard.calc_avg(graph_data.yData.avg_nb_change);
@@ -1230,7 +1231,7 @@ dashboard.plot_quest= function(graph_data){
 
     // Layout
     layout = {
-        barmode:'relative',
+        barmode:'group',
         title: "Nombre moyen de changements de réponse par question au questionnaire de physique",
         showlegend: true,
         yaxis: {title:"Nombre moyen de changements de réponse à une question"},	// setting manual range of axes
@@ -1254,7 +1255,6 @@ dashboard.plot_quest= function(graph_data){
         type:'bar'
     };
 
-    data_deltaT_avg.push(temp_data_to_plot);
 
     temp_data_median={
         x:index,
@@ -1263,7 +1263,6 @@ dashboard.plot_quest= function(graph_data){
         type:'bar'
     };
 
-    data_deltaT_avg.push(temp_data_median);
 
     temp_data_quart1={
         x:index,
@@ -1272,7 +1271,6 @@ dashboard.plot_quest= function(graph_data){
         type:'bar'
     };
 
-    data_deltaT_avg.push(temp_data_quart1);
 
     temp_data_quart3={
         x:index,
@@ -1281,7 +1279,11 @@ dashboard.plot_quest= function(graph_data){
         type:'bar'
     };
 
+
+    data_deltaT_avg.push(temp_data_quart1);
+    data_deltaT_avg.push(temp_data_median);
     data_deltaT_avg.push(temp_data_quart3);
+    data_deltaT_avg.push(temp_data_to_plot);
 
 
     mean_label ="Temps moyen de réponse au questionnaire de physique";
@@ -1323,7 +1325,7 @@ dashboard.plot_quest= function(graph_data){
 
     // Layout
     layout = {
-        barmode:'relative',
+        barmode:'group',
         title: "Temps moyen de réponse au questionnaire de physique",
         showlegend: true,
         yaxis: {title:"Temps moyen de réponse à une question"},	// setting manual range of axes
@@ -1377,7 +1379,7 @@ dashboard.calc_milis_to_min= function(tab){
     var to_min=[];
 
     for(var i=0; i<tab.length;i++) {
-        to_min.push((tab[i]/1000)/60);
+        to_min.push((tab[i]/3600);
     }
     return to_min;
 };

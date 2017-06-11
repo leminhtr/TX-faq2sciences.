@@ -464,9 +464,38 @@ var dashboard = {
 	init_vAvg_user_phy : function() {	// mettre instance dans fonction
         var vAvg_user_phy = new dashboard.graph_data(dashboard.query_list.avg_user_phy,
             "étudiant",
-            "Score moyen d'un étudiant",
+            {
+            	"score":{
+            	    "yaxis" :"Score moyen d'un étudiant au questionnaire de physique",
+                    "xaxis":"étudiant"
+            	},
+            	"change":{"title":"Nombre changements de réponse par étudiant au questionnaire de physique",
+                    "yaxis":"Nombre changements de réponse à d'un étudiant à une question",
+                    "xaxis":"étudiant",
+                    "max":"Nombre de changements de réponse maximale d'un étudiant au questionnaire",
+                    "median":"Médiane du nombre de changements de réponse d'un étudiant au questionnaire",
+                    "quart1":"1er quartile du nombre de changements de réponse d'un étudiant au questionnaire",
+										"quart3":"3ème quartile du nombre de changements de réponse d'un étudiant au questionnaire",
+                    "mean_line":"Nombre moyen total de changements de réponse d'un étudiant de physique"
+            	},
+                "deltaT":{
+                    "title":"Temps moyen de réponse d'un étudiant au questionnaire de physique",
+                    "yaxis":"Temps moyen de réponse d'un étudiant à une question",
+                    "xaxis":"étudiant",
+                    "max":"Temps de réponse maximale d'un étudiant au questionnaire",
+										"median":"Médiane du temps de réponse d'un étudiant au questionnaire",
+                    "quart1":"1er quartile du temps de réponse d'un étudiant au questionnaire",
+                    "quart3":"3ème quartile du temps de réponse d'un étudiant au questionnaire",
+                    "mean_line":"Temps moyen total de réponse d'un étudiant au questionnaire de physique"
+
+            		}
+        	},
             "Score moyen d'un étudiant au questionnaire de physique",
-            "bar_avg_user_phy",
+            {
+                "score":"bar_avg_user_phy",
+                "change":"bar_avg_user_phy_nb_change",
+                "deltaT":"bar_avg_user_phy_deltaT"
+            },
             "Score total moyen des étudiants",
             " l'écart type",
 //yData :			//{users:[], questions:[], nb_change_tot:0, nb_change:[], max_time:[], min_time:[], score_scaled:[]},
@@ -483,7 +512,7 @@ var dashboard = {
             }	//score de user à une question
         );
 
-        vAvg_user_phy.plotMe = dashboard.plotBar;
+        vAvg_user_phy.plotMe = dashboard.plot_quest;
         vAvg_user_phy.query_size = {nb_user: 800, nb_quest: 40};	// inutile si déjà dans query ?
         // variable à remettre dans constructeur ?
 
@@ -501,7 +530,10 @@ var dashboard = {
             stdev_time: [],	//écart type de changement de réponse par uset
             pre_score_scaled: [],	//score de chaque question répondue, pour chaque user
             avg_score_scaled: [],	//score moyen d'un questionnaire, pour chaque user
-            stdev_score_scaled: []	//score moyen d'un questionnaire, pour chaque user
+            stdev_score_scaled: [],	//score moyen d'un questionnaire, pour chaque user
+						data_frame_score:{avg_score:[], median_score:[], quartile1_score:[], quartile3_score:[], max_score:[]}, // besoin que de avg_score ? donc reste à delete
+            data_frame_nb_change:{avg_change:[], median_change:[], quartile1_change:[], quartile3_change:[],max_change:[]},
+            data_frame_time:{avg_time:[], median_time:[], quartile1_time:[], quartile3_time:[],max_time:[]}
         };
 
         vAvg_user_phy.set_yData = function (data_response) {
@@ -548,12 +580,36 @@ var dashboard = {
                 vAvg_user_phy.yData.questions.push(temp_questions);
                 vAvg_user_phy.yData.nb_change.push(temp_nb_change);
                 //console.log(temp_nb_change);
+
+								// Data frame nb change
+								vAvg_user_phy.yData.data_frame_nb_change.median_change.push(dashboard.quantile(temp_nb_change,50));//median de la question
+								vAvg_user_phy.yData.data_frame_nb_change.quartile1_change.push(dashboard.quantile(temp_nb_change,25)) ;// 1er quartile de la question
+								vAvg_user_phy.yData.data_frame_nb_change.quartile3_change.push(dashboard.quantile(temp_nb_change,75)) ;  //3ème quartile de la question
+								vAvg_user_phy.yData.data_frame_nb_change.max_change.push(dashboard.quantile(temp_nb_change,100));  //3ème quartile de la question
+
+
+
+
                 vAvg_user_phy.yData.max_time.push(temp_max_time);
                 vAvg_user_phy.yData.min_time.push(temp_min_time);
 
-                //vAvg_user_phy.yData.delta_time.push(temp_delta_time);
-                //console.log(temp_delta_time);
-                vAvg_user_phy.yData.pre_score_scaled.push(temp_pre_score_scaled);
+								temp_delta_time=dashboard.calc_delta_time(temp_max_time,temp_min_time);
+								temp_delta_time=dashboard.calc_milis_to_min(temp_delta_time); // convert to sec
+
+								vAvg_user_phy.yData.data_frame_time.median_time.push(dashboard.quantile(temp_delta_time,50));//median de la question
+               vAvg_user_phy.yData.data_frame_time.quartile1_time.push(dashboard.quantile(temp_delta_time,25)) ;// 1er quartile de la question
+               vAvg_user_phy.yData.data_frame_time.quartile3_time.push(dashboard.quantile(temp_delta_time,75)) ;  //3ème quartile de la question
+               vAvg_user_phy.yData.data_frame_time.max_time.push(dashboard.quantile(temp_delta_time,100));  //3ème quartile de la question
+
+
+
+               vAvg_user_phy.yData.pre_score_scaled.push(temp_pre_score_scaled);
+
+
+               vAvg_user_phy.yData.data_frame_score.median_score.push(dashboard.quantile(temp_pre_score_scaled,50));//median de la question
+               vAvg_user_phy.yData.data_frame_score.quartile3_score.push(dashboard.quantile(temp_pre_score_scaled,25)) ;// 1er quartile de la question
+               vAvg_user_phy.yData.data_frame_score.quartile3_score.push(dashboard.quantile(temp_pre_score_scaled,75)) ;  //3ème quartile de la question
+               vAvg_user_phy.yData.data_frame_score.max_score.push(dashboard.quantile(temp_pre_score_scaled,100));  //3ème quartile de la question
             }
 
 
@@ -580,8 +636,9 @@ var dashboard = {
 
             // score moyen d'un utilisateur sur tout un questionnaire
             vAvg_user_phy.yData.avg_score_scaled = dashboard.calc_avg_nested(vAvg_user_phy.yData.pre_score_scaled);
-            //vAvg_user_phy.yData.avg_score_scaled.sort();
-            //vAvg_user_phy.yData.avg_score_scaled.reverse();
+            vAvg_user_phy.yData.avg_score_scaled.sort();
+            vAvg_user_phy.yData.avg_score_scaled.reverse();
+						
             vAvg_user_phy.yData.stdev_score_scaled = dashboard.calc_unbiaised_stdev_nested(vAvg_user_phy.yData.pre_score_scaled);
 
             vAvg_user_phy.yMean = dashboard.calc_avg(vAvg_user_phy.yData.avg_score_scaled);
@@ -590,6 +647,11 @@ var dashboard = {
 
             vAvg_user_phy.query_size.nb_user = vAvg_user_phy.xData.length;
 
+						// Construct data frame
+						// Data frame
+						vAvg_user_phy.yData.data_frame_score.avg_score=vAvg_user_phy.yData.avg_score_scaled;
+						vAvg_user_phy.yData.data_frame_nb_change.avg_change=vAvg_user_phy.yData.avg_nb_change;
+						vAvg_user_phy.yData.data_frame_time.avg_time=vAvg_user_phy.yData.avg_time;
 
         }; // function set yData phy
 
@@ -648,7 +710,7 @@ var dashboard = {
              }	//score de user à une question
          );
 
-         vAvg_user_bio.plotMe = dashboard.plotBar;
+         vAvg_user_bio.plotMe = dashboard.plot_user;
          vAvg_user_bio.query_size = {nb_user: 800, nb_quest: 300};	// inutile si déjà dans query ?
          // variable à remettre dans constructeur ?
 
@@ -1214,7 +1276,7 @@ dashboard.readData= function (response_to_format, graph_data){ // traite la rép
 };
 
 
-dashboard.plotBar= function(graph_data, tab_to_plot){
+dashboard.plot_user= function(graph_data, tab_to_plot){
     //graph_data.xData.sort();
     //graph_data.yData.sort();
     //graph_data.yData.reverse();
@@ -1235,83 +1297,17 @@ dashboard.plotBar= function(graph_data, tab_to_plot){
 
     // var xmin = jStat.min( graph_data.xData);
     // var xmax= jStat.max( graph_data.xData);
+		// ***************** Plot score avg **************************
+		var data_score_avg=[];
 
+		var temp_data_to_plot={
 
+				y:graph_data.yData.data_frame_score.avg_score,
+				name:graph_data.yLabel.score.yaxis,
+				type:'bar'
+		};
 
-
-
-    // var data = [
-    //     {
-    //         //x: graph_data.xData,  // Données axe x
-    //         y: graph_data.yData.avg_score_scaled,   // Données axe y
-    //         name : graph_data.yLabel,
-    //         type: 'bar'
-    //     }
-    //
-    // ];
-
-    // var mean_line={
-    //     name:graph_data.yMean_label,
-    //     type:'lines',
-    //     x:[0,graph_data.yData.avg_score_scaled.length],
-    //     y:[graph_data.yMean,graph_data.yMean],	// moyenne - écart type corrigée
-    //     marker: {         // marker is an object, valid marker keys: #scatter-marker
-    //         color: 'rgb(255,140,0)'
-    //     }
-    // };
-    // data.push(mean_line);	// add to plotly
-    //
-    // var stdev_upper_line={
-    //     name:graph_data.yMean_label + ' +' + graph_data.yStdev_label,
-    //     type:'lines',
-    //     x:[0,graph_data.yData.avg_score_scaled.length],
-    //     y:[graph_data.yMean+graph_data.yStdev,graph_data.yMean+graph_data.yStdev],	// moyenne - écart type corrigée
-    //     marker: {         // marker is an object, valid marker keys: #scatter-marker
-    //         color: 'rgb(51,255,51)'
-    //     }
-    // };
-    // data.push(stdev_upper_line);	//add to plotly
-    //
-    // var stdev_lower_line={
-    //     name:graph_data.yMean_label + ' -' + graph_data.yStdev_label,
-    //     type:'lines',
-    //     x:[0,graph_data.yData.avg_score_scaled.length],
-    //     y:[graph_data.yMean-graph_data.yStdev,graph_data.yMean-graph_data.yStdev],	// moyenne - écart type corrigée
-    //     marker: {         // marker is an object, valid marker keys: #scatter-marker
-    //         color: 'rgb(255,51,51)'
-    //     }
-    // }
-    // data.push(stdev_lower_line);
-//
-//  var avgObj={
-//   name: 'average organization',
-//   type: 'scatter',
-//   x: [60],
-//   y: [""],
-//   orientation: 'v',
-//   type: 'bar'
-// }
-//     var layout = {
-//         title: graph_data.title,
-//         showlegend: true,
-//         yaxis: {range: [0,1],
-//             title:graph_data.yLabel},	// setting manual range of axes
-//         xaxis: {title:graph_data.xLabel}	// setting manual range of axes
-//         //    shapes: [
-//         //   //Line Horizontal
-//         //   {
-//         //     type: 'line',
-//         // xref: 'paper',
-//         // x0: 0,
-//         // y0: graph_data.mean,
-//         // x1: 1,
-//         // y1: graph_data.mean,
-//         //     line: {
-//         //       color: 'rgb(50, 171, 96)',
-//         //       width: 3      }
-//         //   }
-//         // ]
-//     };
+		  data_score_avg.push(temp_data_to_plot);
 
     var data=[];
     for(var i=0; i<graph_data.tab_to_plot.length;++i){
@@ -1350,7 +1346,7 @@ dashboard.plotBar= function(graph_data, tab_to_plot){
     }
 
 
-};//end function plotBar
+};//end function plot_user
 
 
 
@@ -1360,12 +1356,12 @@ dashboard.plot_quest= function(graph_data){
     // for (var i = 0; i <= graph_data.xData.length-1; i++) {
     //     index.push(i);
     // }
-    
+
     // ***************** Plot score avg **************************
     var data_score_avg=[];
 
     var temp_data_to_plot={
-        
+
         y:graph_data.yData.data_frame_score.avg_score,
         name:graph_data.yLabel.score.yaxis,
         type:'bar'
@@ -1373,7 +1369,7 @@ dashboard.plot_quest= function(graph_data){
 
 
     // var temp_data_median={
-    //     
+    //
     //     y:graph_data.yData.data_frame_score.median_score,
     //     name:"Médiane du score d'une question au questionnaire",
     //     type:'bar'
@@ -1381,7 +1377,7 @@ dashboard.plot_quest= function(graph_data){
 
 
     // var temp_data_quart1={
-    //     
+    //
     //     y:graph_data.yData.data_frame_score.median_score,
     //     name:"1er quartile du score d'une question au questionnaire",
     //     type:'bar'
@@ -1389,7 +1385,7 @@ dashboard.plot_quest= function(graph_data){
 
 
     // var temp_data_quart3={
-    //     
+    //
     //     y:graph_data.yData.data_frame_score.median_score,
     //     name:"3ème quartile du score d'une question au questionnaire",
     //     type:'bar'
@@ -1463,7 +1459,7 @@ dashboard.plot_quest= function(graph_data){
 
 
     temp_data_median={
-        
+
         y:graph_data.yData.data_frame_nb_change.median_change,
         name:graph_data.yLabel.change.median,
         type:'bar'
@@ -1471,7 +1467,7 @@ dashboard.plot_quest= function(graph_data){
 
 
     temp_data_quart1={
-        
+
         y:graph_data.yData.data_frame_nb_change.quartile1_change,
         name:graph_data.yLabel.change.quart1,
         type:'bar'
@@ -1479,7 +1475,7 @@ dashboard.plot_quest= function(graph_data){
 
 
     temp_data_quart3={
-        
+
         y:graph_data.yData.data_frame_nb_change.quartile3_change,
         name:graph_data.yLabel.change.quart3,
         type:'bar'
@@ -1547,7 +1543,7 @@ dashboard.plot_quest= function(graph_data){
     temp_data=graph_data.yData.avg_time;
 
     temp_data_to_plot={
-        
+
         y:graph_data.yData.data_frame_time.max_time,
         name:graph_data.yLabel.deltaT.max,
         type:'bar'
@@ -1555,7 +1551,7 @@ dashboard.plot_quest= function(graph_data){
 
 
     temp_data_median={
-        
+
         y:graph_data.yData.data_frame_time.median_time,
         name:graph_data.yLabel.deltaT.median,
         type:'bar'
@@ -1563,7 +1559,7 @@ dashboard.plot_quest= function(graph_data){
 
 
     temp_data_quart1={
-        
+
         y:graph_data.yData.data_frame_time.quartile1_time,
         name:graph_data.yLabel.deltaT.quart1,
         type:'bar'
@@ -1571,7 +1567,7 @@ dashboard.plot_quest= function(graph_data){
 
 
     temp_data_quart3={
-        
+
         y:graph_data.yData.data_frame_time.quartile3_time,
         name:graph_data.yLabel.deltaT.quart3,
         type:'bar'
@@ -1785,8 +1781,3 @@ dashboard.quantile=function(array, percentile) {
     }
     return result;
 }
-
-
-
-
-

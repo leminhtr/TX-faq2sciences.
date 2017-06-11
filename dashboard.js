@@ -921,7 +921,7 @@ var dashboard = {
 
 
         	},
-            "Score moyen au questionnaire de physique",
+            "Score moyen par question questionnaire de physique",
             {
                 "score":"bar_avg_quest_phy",
                 "change":"bar_avg_quest_phy_nb_change",
@@ -1061,9 +1061,10 @@ var dashboard = {
 
             // score moyen d'un utilisateur sur tout un questionnaire
             vAvg_quest_phy.yData.avg_score_scaled=dashboard.calc_avg_nested(vAvg_quest_phy.yData.pre_score_scaled);
-            // vAvg_quest_phy.yData.avg_score_scaled.sort();
-            //vAvg_quest_phy.yData.avg_score_scaled.reverse();
-            vAvg_quest_phy.yData.stdev_score_scaled=dashboard.calc_unbiaised_stdev_nested(vAvg_quest_phy.yData.pre_score_scaled);
+            vAvg_quest_phy.yData.avg_score_scaled.sort();
+            vAvg_quest_phy.yData.avg_score_scaled.reverse();
+
+						vAvg_quest_phy.yData.stdev_score_scaled=dashboard.calc_unbiaised_stdev_nested(vAvg_quest_phy.yData.pre_score_scaled);
 
             vAvg_quest_phy.yMean=dashboard.calc_avg(vAvg_quest_phy.yData.avg_score_scaled);
             vAvg_quest_phy.yStdev=dashboard.calc_unbiaised_stdev(vAvg_quest_phy.yData.avg_score_scaled);  //= écart-type de la moyenne des score par utilisateurs
@@ -1123,7 +1124,7 @@ var dashboard = {
 
                 }
             },
-            "Score moyen au questionnaire de biologie",
+            "Score moyen par question au questionnaire de biologie",
             {
                 "score":"bar_avg_quest_bio",
                 "change":"bar_avg_quest_bio_nb_change",
@@ -1263,9 +1264,10 @@ var dashboard = {
 
             // score moyen d'un utilisateur sur tout un questionnaire
             vAvg_quest_bio.yData.avg_score_scaled=dashboard.calc_avg_nested(vAvg_quest_bio.yData.pre_score_scaled);
-            // vAvg_quest_bio.yData.avg_score_scaled.sort();
-            //vAvg_quest_bio.yData.avg_score_scaled.reverse();
-            vAvg_quest_bio.yData.stdev_score_scaled=dashboard.calc_unbiaised_stdev_nested(vAvg_quest_bio.yData.pre_score_scaled);
+            vAvg_quest_bio.yData.avg_score_scaled.sort();
+            vAvg_quest_bio.yData.avg_score_scaled.reverse();
+
+						vAvg_quest_bio.yData.stdev_score_scaled=dashboard.calc_unbiaised_stdev_nested(vAvg_quest_bio.yData.pre_score_scaled);
 
             vAvg_quest_bio.yMean=dashboard.calc_avg(vAvg_quest_bio.yData.avg_score_scaled);
             vAvg_quest_bio.yStdev=dashboard.calc_unbiaised_stdev(vAvg_quest_bio.yData.avg_score_scaled);  //= écart-type de la moyenne des score par utilisateurs

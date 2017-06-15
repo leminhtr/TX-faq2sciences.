@@ -71,10 +71,12 @@ var dashboard = {
                                     "faq2sciencesdistrib-2016.09.20",
                                     "faq2sciencesdistrib-2016.09.21",
                                     "faq2sciencesdistrib-2016.09.22",
-                                    "faq2sciencesdistrib-2016.09.24",
-                                    "faq2sciencesdistrib-2016.09.26"
-                                ]
+                                    "faq2sciencesdistrib-2016.09.24"                                ]
                             }
+                        },
+                        ,
+                        {
+                            "exists" : { "field" : "response" }
                         },
                         {
                             "term": {
@@ -170,15 +172,16 @@ var dashboard = {
                                     "faq2sciencesdistrib-2016.09.20",
                                     "faq2sciencesdistrib-2016.09.21",
                                     "faq2sciencesdistrib-2016.09.22",
-                                    "faq2sciencesdistrib-2016.09.24",
-                                    "faq2sciencesdistrib-2016.09.26"
-                                ]
+                                    "faq2sciencesdistrib-2016.09.24"                                ]
                             }
                         },
                         {
                             "term": {
                                 "depot_path.raw": "/Partenaires/UL/UL-Bio"
                             }
+                        },
+                        {
+                            "exists" : { "field" : "response" }
                         },
                         {
                             "term": {
@@ -273,10 +276,11 @@ var dashboard = {
                                     "faq2sciencesdistrib-2016.09.20",
                                     "faq2sciencesdistrib-2016.09.21",
                                     "faq2sciencesdistrib-2016.09.22",
-                                    "faq2sciencesdistrib-2016.09.24",
-                                    "faq2sciencesdistrib-2016.09.26"
-                                ]
+                                    "faq2sciencesdistrib-2016.09.24"                                ]
                             }
+                        },
+                        {
+                            "exists" : { "field" : "response" }
                         },
                         {
                             "term": {
@@ -372,10 +376,12 @@ var dashboard = {
                                     "faq2sciencesdistrib-2016.09.20",
                                     "faq2sciencesdistrib-2016.09.21",
                                     "faq2sciencesdistrib-2016.09.22",
-                                    "faq2sciencesdistrib-2016.09.24",
-                                    "faq2sciencesdistrib-2016.09.26"
-                                ]
-                            }
+                                    "faq2sciencesdistrib-2016.09.24"                                ]
+                            },
+
+                        },
+                        {
+                            "exists" : { "field" : "response" }
                         },
                         {
                             "term": {

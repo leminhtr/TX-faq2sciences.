@@ -37,24 +37,6 @@ var dashboard = {
     },	//fin constructeur
 
 
-
-	query_build_thibault : function(){
-		var aggQId =  {"question_id":{"terms" : {"field" : "question_id.raw","size":50}}};
-		var aggUser =  {"user":{"terms" : {"field" : "user.raw","size":800}}};
-		vQUery = {};
-		vQUery.aggs = aggUser;
-		aggUser.aggs = aggQId;
-
-		//...
-	},
-
-	common_path:{aggs: "aggregations",
-				quest:"questions",
-				users:"users",
-				buckets:"buckets.key",
-				nb_doc:"doc_count",
-				first_hit:"hits.hits[0]"},
-
 	query_list:{avg_user_phy:
         {
             "query": {
@@ -74,7 +56,7 @@ var dashboard = {
                                     "faq2sciencesdistrib-2016.09.24"                                ]
                             }
                         },
-                        ,
+                        
                         {
                             "exists" : { "field" : "response" }
                         },
@@ -172,7 +154,8 @@ var dashboard = {
                                     "faq2sciencesdistrib-2016.09.20",
                                     "faq2sciencesdistrib-2016.09.21",
                                     "faq2sciencesdistrib-2016.09.22",
-                                    "faq2sciencesdistrib-2016.09.24"                                ]
+                                    "faq2sciencesdistrib-2016.09.24"                                
+                                    ]
                             }
                         },
                         {
@@ -197,7 +180,6 @@ var dashboard = {
                                     "j74GTDxCdUh1AhUJbxzOCg",
                                     "Ro8Bn94sH5fiObRDLGMDub",
                                     "AXGE9teKhMdo4j0BsK6x8f",
-                                    "BdYLqQ15ObfDNWH4r8ES1d",
                                     "XSSBiN8sCL10gnc6XsIUi",
                                     "ImUQEzT8sjgXe0C5WIYD9g",
                                     "QWGy9VVCetknLGk0eUfkvc",
@@ -402,7 +384,6 @@ var dashboard = {
                                     "j74GTDxCdUh1AhUJbxzOCg",
                                     "Ro8Bn94sH5fiObRDLGMDub",
                                     "AXGE9teKhMdo4j0BsK6x8f",
-                                    "BdYLqQ15ObfDNWH4r8ES1d",
                                     "XSSBiN8sCL10gnc6XsIUi",
                                     "ImUQEzT8sjgXe0C5WIYD9g",
                                     "QWGy9VVCetknLGk0eUfkvc",
@@ -475,8 +456,8 @@ var dashboard = {
             	    "yaxis" :"Score moyen d'un étudiant au questionnaire de physique",
                     "xaxis":"étudiant"
             	},
-            	"change":{"title":"Nombre changements de réponse par étudiant au questionnaire de physique",
-                    "yaxis":"Nombre changements de réponse à d'un étudiant à une question",
+            	"change":{"title":"Nombre de changements de réponse par étudiant au questionnaire de physique",
+                    "yaxis":"Nombre de changements de réponse d'un étudiant à une question",
                     "xaxis":"étudiant",
                     "max":"Nombre de changements de réponse maximale d'un étudiant au questionnaire",
                     "median":"Médiane du nombre de changements de réponse d'un étudiant au questionnaire",
@@ -484,6 +465,11 @@ var dashboard = {
 										"quart3":"3ème quartile du nombre de changements de réponse d'un étudiant au questionnaire",
                     "mean_line":"Nombre moyen total de changements de réponse d'un étudiant de physique"
             	},
+                "change_mean":{"title":"Nombre de changements de réponse moyen par étudiant au questionnaire de physique",
+                    "yaxis":"Nombre de changements de réponse moyen d'un étudiant à une question",
+                    "xaxis":"étudiant",
+                    "mean_line":"Nombre moyen total de changements de réponse d'un étudiant de physique"
+                },
                 "deltaT":{
                     "title":"Temps moyen de réponse d'un étudiant au questionnaire de physique",
                     "yaxis":"Temps moyen de réponse d'un étudiant à une question",
@@ -500,6 +486,7 @@ var dashboard = {
             {
                 "score":"bar_avg_user_phy",
                 "change":"bar_avg_user_phy_nb_change",
+                "change_mean":"bar_avg_user_phy_nb_change_mean",
                 "deltaT":"bar_avg_user_phy_deltaT"
             },
             "Score total moyen des étudiants",
@@ -519,6 +506,8 @@ var dashboard = {
         );
 
         vAvg_user_phy.plotMe = dashboard.plot_quest;
+        vAvg_user_phy.plot_mean_nb_change= dashboard.plot_mean_nb_change;
+
         vAvg_user_phy.query_size = {nb_user: 800, nb_quest: 40};	// inutile si déjà dans query ?
         // variable à remettre dans constructeur ?
 
@@ -701,8 +690,8 @@ var dashboard = {
 		                "yaxis" :"Score moyen d'un étudiant au questionnaire de biologie",
 		                  "xaxis":"étudiant"
 		            },
-		            "change":{"title":"Nombre changements de réponse par étudiant au questionnaire de biologie",
-		                  "yaxis":"Nombre changements de réponse à d'un étudiant à une question",
+		            "change":{"title":"Nombre de changements de réponse par étudiant au questionnaire de biologie",
+		                  "yaxis":"Nombre de changements de réponse d'un étudiant à une question",
 		                  "xaxis":"étudiant",
 		                  "max":"Nombre de changements de réponse maximale d'un étudiant au questionnaire",
 		                  "median":"Médiane du nombre de changements de réponse d'un étudiant au questionnaire",
@@ -710,6 +699,11 @@ var dashboard = {
 		                  "quart3":"3ème quartile du nombre de changements de réponse d'un étudiant au questionnaire",
 		                  "mean_line":"Nombre moyen total de changements de réponse d'un étudiant de biologie"
 		            },
+                     "change_mean":{"title":"Nombre de changements de réponse moyen par étudiant au questionnaire de biologie",
+                          "yaxis":"Nombre de changements de réponse moyen d'un étudiant à une question",
+                          "xaxis":"étudiant",
+                          "mean_line":"Nombre moyen total de changements de réponse d'un étudiant de biologie"
+                    },
 		              "deltaT":{
 		                  "title":"Temps moyen de réponse d'un étudiant au questionnaire de biologie",
 		                  "yaxis":"Temps moyen de réponse d'un étudiant à une question",
@@ -725,7 +719,8 @@ var dashboard = {
 		          "Score moyen d'un étudiant au questionnaire de biologie",
 		          {
 		              "score":"bar_avg_user_bio",
-		              "change":"bar_avg_user_bio_nb_change",
+                      "change":"bar_avg_user_bio_nb_change",
+		              "change_mean":"bar_avg_user_bio_nb_change_mean",
 		              "deltaT":"bar_avg_user_bio_deltaT"
 		          },
 		          "Score total moyen des étudiants",
@@ -744,7 +739,9 @@ var dashboard = {
 		          }	//score de user à une question
 		      );
 
-		      vAvg_user_bio.plotMe = dashboard.plot_quest;
+              vAvg_user_bio.plotMe = dashboard.plot_quest;
+		      vAvg_user_bio.plot_mean_nb_change= dashboard.plot_mean_nb_change;
+
 		      vAvg_user_bio.query_size = {nb_user: 800, nb_quest: 40};	// inutile si déjà dans query ?
 		      // variable à remettre dans constructeur ?
 
@@ -863,7 +860,7 @@ var dashboard = {
 		          vAvg_user_bio.yData.avg_nb_change = dashboard.calc_avg_nested(vAvg_user_bio.yData.nb_change);
 		          //vAvg_user_bio.yData.avg_nb_change.sort();
 		          //vAvg_user_bio.yData.avg_nb_change.reverse();
-		          //console.log(vAvg_user_bio.yData.avg_nb_change);
+		          console.log(vAvg_user_bio.yData.avg_nb_change);
 		          vAvg_user_bio.yData.stdev_nb_change = dashboard.calc_unbiaised_stdev_nested(vAvg_user_bio.yData.nb_change);
 
 		          // score moyen d'un utilisateur sur tout un questionnaire
@@ -904,8 +901,8 @@ var dashboard = {
             	    "yaxis" :"Score moyen d'une question de physique",
                     "xaxis":"Question"
             	},
-            	"change":{"title":"Nombre changements de réponse par question au questionnaire de physique",
-                    "yaxis":"Nombre changements de réponse à une question",
+            	"change":{"title":"Nombre de changements de réponse par question au questionnaire de physique",
+                    "yaxis":"Nombre de changements de réponse à une question",
                     "xaxis":"Question",
                     "max":"Nombre de changements de réponse maximale d'une question au questionnaire",
                     "median":"Médiane du nombre de changements de réponse à une question au questionnaire",
@@ -913,6 +910,11 @@ var dashboard = {
                     "quart3":"3ème quartile du nombre de changements de réponse à une question au questionnaire",
                     "mean_line":"Nombre moyen total de changements de réponse au questionnaire de physique"
             	},
+                "change_mean":{"title":"Nombre de changements de réponse moyen par question au questionnaire de physique",
+                    "yaxis":"Nombre de changements de réponse moyen à une question",
+                    "xaxis":"Question",
+                    "mean_line":"Nombre moyen total de changements de réponse au questionnaire de physique"
+                },                
                 "deltaT":{
                     "title":"Temps moyen de réponse au questionnaire de physique",
                     "yaxis":"Temps moyen de réponse à une question",
@@ -931,6 +933,7 @@ var dashboard = {
             {
                 "score":"bar_avg_quest_phy",
                 "change":"bar_avg_quest_phy_nb_change",
+                "change_mean":"bar_avg_quest_phy_nb_change_mean",
                 "deltaT":"bar_avg_quest_phy_deltaT"
             },
             "Score total moyen du questionnaire de physique",
@@ -948,6 +951,7 @@ var dashboard = {
         );
 
             vAvg_quest_phy.plotMe=dashboard.plot_quest;
+            vAvg_quest_phy.plot_mean_nb_change=dashboard.plot_mean_nb_change;
         vAvg_quest_phy.query_size={nb_user:800, nb_quest:40};	// inutile si déjà dans query ?
         // variable à remettre dans constructeur ?
 
@@ -1109,13 +1113,18 @@ var dashboard = {
                     "yaxis" :"Score moyen d'une question de biologie",
                     "xaxis":"Question"
                 },
-                "change":{"title":"Nombre changements de réponse par question au questionnaire de biologie",
-                    "yaxis":"Nombre changements de réponse à une question",
+                "change":{"title":"Nombre de changements de réponse par question au questionnaire de biologie",
+                    "yaxis":"Nombre de changements de réponse à une question",
                     "xaxis":"Question",
                     "max":"Nombre de changements de réponse maximale d'une question au questionnaire",
                     "median":"Médiane du nombre de changements de réponse à une question au questionnaire",
                     "quart1":"1er quartile du nombre de changements de réponse à une question au questionnaire",
                     "quart3":"3ème quartile du nombre de changements de réponse à une question au questionnaire",
+                    "mean_line":"Nombre moyen total de changements de réponse au questionnaire de biologie"
+                },
+                 "change_mean":{"title":"Nombre de changements de réponse moyen par question au questionnaire de biologie",
+                    "yaxis":"Nombre de changements de réponse moyen à une question",
+                    "xaxis":"Question",
                     "mean_line":"Nombre moyen total de changements de réponse au questionnaire de biologie"
                 },
                 "deltaT":{
@@ -1134,6 +1143,7 @@ var dashboard = {
             {
                 "score":"bar_avg_quest_bio",
                 "change":"bar_avg_quest_bio_nb_change",
+                "change_mean":"bar_avg_quest_bio_nb_change_mean",
                 "deltaT":"bar_avg_quest_bio_deltaT"
             },
             "Score total moyen du questionnaire de biologie",
@@ -1151,6 +1161,7 @@ var dashboard = {
         );
 
         vAvg_quest_bio.plotMe=dashboard.plot_quest;
+        vAvg_quest_bio.plot_mean_nb_change=dashboard.plot_mean_nb_change;
         vAvg_quest_bio.query_size={nb_user:800, nb_quest:300};	// inutile si déjà dans query ?
         // variable à remettre dans constructeur ?
 
@@ -1297,6 +1308,10 @@ var dashboard = {
 
         dashboard.graphs.push(vAvg_quest_bio);	// ajout du graph dans a liste de graphs
 
+
+        // 1 User temps réponse
+
+
     }//fin init()
 
 
@@ -1353,6 +1368,7 @@ dashboard.readData= function (response_to_format, graph_data){ // traite la rép
     graph_data.query_size=graph_data.yData.length;	// update size of data
 
     graph_data.plotMe(graph_data);
+    graph_data.plot_mean_nb_change(graph_data);
 };
 
 //
@@ -1441,7 +1457,7 @@ dashboard.plot_quest= function(graph_data){
     var data_score_avg=[];
 
     var temp_data_to_plot={
-
+        //x:graph_data.xData,
         y:graph_data.yData.data_frame_score.avg_score,
         name:graph_data.yLabel.score.yaxis,
         type:'bar'
@@ -1532,6 +1548,7 @@ dashboard.plot_quest= function(graph_data){
     temp_data=graph_data.yData.avg_nb_change;
 
     temp_data_to_plot={
+        //x:graph_data.xData,
         y:graph_data.yData.data_frame_nb_change.max_change,
         name:graph_data.yLabel.change.max,
         type:'bar'
@@ -1539,6 +1556,7 @@ dashboard.plot_quest= function(graph_data){
 
 
     temp_data_median={
+        //x:graph_data.xData,
 
         y:graph_data.yData.data_frame_nb_change.median_change,
         name:graph_data.yLabel.change.median,
@@ -1547,6 +1565,7 @@ dashboard.plot_quest= function(graph_data){
 
 
     temp_data_quart1={
+        //x:graph_data.xData,
 
         y:graph_data.yData.data_frame_nb_change.quartile1_change,
         name:graph_data.yLabel.change.quart1,
@@ -1555,6 +1574,7 @@ dashboard.plot_quest= function(graph_data){
 
 
     temp_data_quart3={
+        //x:graph_data.xData,
 
         y:graph_data.yData.data_frame_nb_change.quartile3_change,
         name:graph_data.yLabel.change.quart3,
@@ -1616,6 +1636,7 @@ dashboard.plot_quest= function(graph_data){
     Plotly.newPlot(graph_data.DOM_id.change, data_nb_change_avg, layout, {displaylogo: false}, {showLink: false});
 
 
+/**** Données non valides
 
     //****************** Plot temps réponse *********************
 
@@ -1710,10 +1731,79 @@ dashboard.plot_quest= function(graph_data){
     Plotly.newPlot(graph_data.DOM_id.deltaT, data_deltaT_avg, layout, {displaylogo: false}, {showLink: false});
 
 
-
+*/
 
 
 };//end function plot
+
+
+dashboard.plot_mean_nb_change= function(graph_data){
+
+//****************** PLOT nb changement *********************
+
+    var data_nb_change_avg=[];
+    // temp_data=graph_data.yData.avg_nb_change;
+    // temp_data=graph_data.yData.data_frame_nb_change.avg_change;
+    dataY=graph_data.yData.data_frame_nb_change.avg_change.sort();
+    dataY.reverse();
+
+    temp_data={
+        y:dataY,
+        name:graph_data.yLabel.change_mean.yaxis,
+        type:'bar'
+    };
+
+    data_nb_change_avg.push(temp_data);
+
+    var mean_label =graph_data.yLabel.change_mean.mean_line;
+    var mean_value=dashboard.calc_avg(graph_data.yData.avg_nb_change);
+    var std_value=dashboard.calc_unbiaised_stdev(graph_data.yData.avg_nb_change);
+
+
+    mean_line={
+        name:mean_label,
+        type:'lines',
+        x:[0,graph_data.yData.avg_nb_change.length-1],
+        y:[mean_value,mean_value],  // moyenne
+        marker: {         // marker is an object, valid marker keys: #scatter-marker
+            color: 'rgb(255,140,0)'
+        }
+    };
+    data_nb_change_avg.push(mean_line); // add to plotly
+
+    stdev_upper_line={
+        name:mean_label + ' +' + graph_data.yStdev_label,
+        type:'lines',
+        x:[0,graph_data.yData.avg_nb_change.length-1],
+        y:[mean_value+std_value, mean_value+std_value ],    // moyenne - écart type corrigée
+        marker: {         // marker is an object, valid marker keys: #scatter-marker
+            color: 'rgb(51,255,51)'
+        }
+    };
+    data_nb_change_avg.push(stdev_upper_line);  //add to plotly
+
+    stdev_lower_line={
+        name: mean_label + ' -' + graph_data.yStdev_label,
+        type:'lines',
+        x:[0,graph_data.yData.avg_nb_change.length-1],
+        y:[mean_value-std_value, mean_value-std_value ],    // moyenne - écart type corrigée
+        marker: {         // marker is an object, valid marker keys: #scatter-marker
+            color: 'rgb(255,51,51)'
+        }
+    }
+    data_nb_change_avg.push(stdev_lower_line);
+
+    // Layout
+    layout = {
+        title: graph_data.yLabel.change_mean.title,
+        showlegend: true,
+        yaxis: {title:graph_data.yLabel.change_mean.yaxis},
+        xaxis: {title:graph_data.yLabel.change_mean.xaxis}
+    };
+
+    Plotly.newPlot(graph_data.DOM_id.change_mean, data_nb_change_avg, layout, {displaylogo: false}, {showLink: false});
+}
+
 
 dashboard.calc_delta_time= function(tab1, tab2){
 	var delta_time=[];

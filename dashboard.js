@@ -69,6 +69,14 @@ var dashboard = {
                             "term": {
                                 "verb.raw": "scored"
                             }
+                        },
+                        {
+                            "range": {
+                                "user":{
+                                    "gt": 4912
+                                    
+                                    }
+                            }
                         }
                     ],
                     "must_not": [
@@ -169,6 +177,14 @@ var dashboard = {
                         {
                             "term": {
                                 "verb.raw": "scored"
+                            }
+                        },
+                        {
+                            "range": {
+                                "user":{
+                                    "gt": 4912
+                                    
+                                    }
                             }
                         }
                     ],
@@ -273,6 +289,14 @@ var dashboard = {
                             "term": {
                                 "verb.raw": "scored"
                             }
+                        },
+                        {
+                            "range": {
+                                "user":{
+                                    "gt": 4912
+                                    
+                                    }
+                            }
                         }
                     ],
                     "must_not": [
@@ -373,6 +397,14 @@ var dashboard = {
                         {
                             "term": {
                                 "verb.raw": "scored"
+                            }
+                        },
+                        {
+                            "range": {
+                                "user":{
+                                    "gt": 4912
+                                    
+                                    }
                             }
                         }
                     ],

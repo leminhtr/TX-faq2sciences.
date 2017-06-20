@@ -929,7 +929,7 @@ var dashboard = {
 
 
         	},
-            "Score moyen par question questionnaire de physique",
+            "Score moyen par question au questionnaire de physique",
             {
                 "score":"bar_avg_quest_phy",
                 "change":"bar_avg_quest_phy_nb_change",

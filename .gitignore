@@ -34,3 +34,5 @@ elasticsearch\.jquery\.js
 elasticsearch\.js
 
 elasticsearch\.min\.js
+
+*.log

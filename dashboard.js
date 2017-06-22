@@ -19,7 +19,6 @@ var dashboard = {
 		this.yStdev_label= pStdev_label;	//label yStdev
 		this.nb_tot= 0;	// à voir si utile
 		this.data_path=pData_path;	// objet {attribut : path_to_data, attribut2: path_to_data, ...} => Different pour chaque graph
-        this.tab_to_plot=[]; // liste des yData à afficher
 
         this.set_nb_tot=function(response_to_format){
             this.query_size=response_to_format.hits.total; //=array de [{doc_count:..., key:..., score_avg:{value:...}}, {}, ... ]
@@ -682,29 +681,7 @@ var dashboard = {
 
         }; // function set yData phy
 
-        vAvg_user_phy.tab_to_plot = [{
-            DOM_id: "bar_avg_user_phy",
-            yData: "avg_score_scaled",
-            xlabel: "étudiant",
-            ylabel: "Score moyen d'un étudiant au questionnaire",
-            title: "Score moyen d'un étudiant au questionnaire de physique"
-        },
-            {
-                DOM_id: "bar_avg_user_phy_nb_change",
-                yData: "avg_nb_change",
-                xlabel: "étudiant",
-                ylabel: "Nombre moyen de changements de réponse au questionnaire",
-                title: "Nombre moyen de changements de réponse par étudiant au questionnaire de physique"
-            },
-            {
-                DOM_id: "bar_avg_user_phy_deltaT",
-                yData: "avg_time",
-                xlabel: "étudiant",
-                ylabel: "Temps moyen de réponse par question au questionnaire (en seconde)",
-                title: "Temps moyen de réponse au questionnaire de physique par étudiant (en seconde)"
-            }
-        ];
-
+        
         dashboard.send_Xhr(dashboard.readData, vAvg_user_phy);
 
         dashboard.graphs.push(vAvg_user_phy);	// ajout du graph dans a liste de graphs
@@ -1319,7 +1296,7 @@ var dashboard = {
 						vAvg_quest_bio.yData.stdev_score_scaled=dashboard.calc_unbiaised_stdev_nested(vAvg_quest_bio.yData.pre_score_scaled);
 
             vAvg_quest_bio.yMean=dashboard.calc_avg(vAvg_quest_bio.yData.avg_score_scaled);
-            vAvg_quest_bio.yStdev=dashboard.calc_unbiaised_stdev(vAvg_quest_bio.yData.avg_score_scaled);  //= écart-type de la moyenne des score par utilisateurs
+            vAvg_quest_bio.yStdev=dashboard.calc_unbiaised_stdev(vAvg_quest_bio.yData.avg_score_scaled);  //= écart-type de la moyenne des scores par utilisateurs
             // != écart type des écarts type du score au questionnaire d'un user
 
             vAvg_quest_bio.query_size.nb_user=vAvg_quest_bio.xData.length;
@@ -1348,14 +1325,7 @@ var dashboard = {
 
 
 	}; // fin namespace
-//
-// dashboard.Data = function(data){	//déclaration d'un constructeur d'objet : new_object= new dashboard.Data(data)
-// 	this.graph = data;
-// };
-// dashboard.Data.prototype.buildGraph = function(){	// méthode de classe
-// 	//
-// };
-//window.onload = dashboard.init;
+
 
 dashboard.send_Xhr= function(callback, graph_data){ // appel du callback et send query après le listener
 
@@ -1403,87 +1373,9 @@ dashboard.readData= function (response_to_format, graph_data){ // traite la rép
     graph_data.plot_mean_nb_change(graph_data);
 };
 
-//
-// dashboard.plot_user= function(graph_data, tab_to_plot){
-//     //graph_data.xData.sort();
-//     //graph_data.yData.sort();
-//     //graph_data.yData.reverse();
-//
-//     //graph_data.data.sort(sort_by('y_data', true, parseInt));
-//     // graph_data.data=sortJSON(graph_data.data,'y');
-// // 	graph_data.data.sort(function(a, b) {
-// //     return parseInt(a.y_data) - parseFloat(b.y_data);
-// // });
-//
-//     // for (var i = 0; i in graph_data.data; i++) {
-//     //    	xtab.push(graph_data.data[i].x_data);
-//     //    	ytab.push(graph_data.data[i].y_data);
-//     //    }
-//
-//     //    graph_data.xData=xtab;
-//     //    graph_data.yData=ytab;
-//
-//     // var xmin = jStat.min( graph_data.xData);
-//     // var xmax= jStat.max( graph_data.xData);
-// 		// ***************** Plot score avg **************************
-// 		var data_score_avg=[];
-//
-// 		var temp_data_to_plot={
-//
-// 				y:graph_data.yData.data_frame_score.avg_score,
-// 				name:graph_data.yLabel.score.yaxis,
-// 				type:'bar'
-// 		};
-//
-// 		  data_score_avg.push(temp_data_to_plot);
-//
-//     var data=[];
-//     for(var i=0; i<graph_data.tab_to_plot.length;++i){
-//         var temp_data = graph_data.tab_to_plot[i].yData;
-//
-//         //console.log(graph_data.yData[temp_data]);
-//
-//         data.push({y:graph_data.yData[temp_data],
-//             name:graph_data.tab_to_plot[i].ylabel,
-//             type:'bar'});
-//
-//         var layout = {
-//             title: graph_data.tab_to_plot[i].title,
-//             showlegend: true,
-//             yaxis: {//range: [0,1],
-//                 title:graph_data.tab_to_plot[i].ylabel},	// setting manual range of axes
-//             xaxis: {title:graph_data.tab_to_plot[i].xlabel}	// setting manual range of axes
-//             //    shapes: [
-//             //   //Line Horizontal
-//             //   {
-//             //     type: 'line',
-//             // xref: 'paper',
-//             // x0: 0,
-//             // y0: graph_data.mean,
-//             // x1: 1,
-//             // y1: graph_data.mean,
-//             //     line: {
-//             //       color: 'rgb(50, 171, 96)',
-//             //       width: 3      }
-//             //   }
-//             // ]
-//         };
-//
-//         //console.log(data);
-//         Plotly.newPlot(graph_data.tab_to_plot[i].DOM_id, [data[i]], layout, {displaylogo: false}, {showLink: false});
-//     }
-//
-//
-// };//end function plot_user
-
-
 
 dashboard.plot_quest= function(graph_data){
 
-    // var index=[];
-    // for (var i = 0; i <= graph_data.xData.length-1; i++) {
-    //     index.push(i);
-    // }
 
     // ***************** Plot score avg **************************
     var data_score_avg=[];
@@ -1495,33 +1387,6 @@ dashboard.plot_quest= function(graph_data){
         type:'bar'
     };
 
-
-    // var temp_data_median={
-    //
-    //     y:graph_data.yData.data_frame_score.median_score,
-    //     name:"Médiane du score d'une question au questionnaire",
-    //     type:'bar'
-    // };
-
-
-    // var temp_data_quart1={
-    //
-    //     y:graph_data.yData.data_frame_score.median_score,
-    //     name:"1er quartile du score d'une question au questionnaire",
-    //     type:'bar'
-    // };
-
-
-    // var temp_data_quart3={
-    //
-    //     y:graph_data.yData.data_frame_score.median_score,
-    //     name:"3ème quartile du score d'une question au questionnaire",
-    //     type:'bar'
-    // };
-
-    // data_score_avg.push(temp_data_quart1);
-    // data_score_avg.push(temp_data_median);
-    // data_score_avg.push(temp_data_quart3);
 
     data_score_avg.push(temp_data_to_plot);
 
@@ -1580,7 +1445,6 @@ dashboard.plot_quest= function(graph_data){
     temp_data=graph_data.yData.avg_nb_change;
 
     temp_data_to_plot={
-        //x:graph_data.xData,
         y:graph_data.yData.data_frame_nb_change.max_change,
         name:graph_data.yLabel.change.max,
         type:'bar'
@@ -1588,7 +1452,6 @@ dashboard.plot_quest= function(graph_data){
 
 
     temp_data_median={
-        //x:graph_data.xData,
 
         y:graph_data.yData.data_frame_nb_change.median_change,
         name:graph_data.yLabel.change.median,
@@ -1597,7 +1460,6 @@ dashboard.plot_quest= function(graph_data){
 
 
     temp_data_quart1={
-        //x:graph_data.xData,
 
         y:graph_data.yData.data_frame_nb_change.quartile1_change,
         name:graph_data.yLabel.change.quart1,
@@ -1606,7 +1468,6 @@ dashboard.plot_quest= function(graph_data){
 
 
     temp_data_quart3={
-        //x:graph_data.xData,
 
         y:graph_data.yData.data_frame_nb_change.quartile3_change,
         name:graph_data.yLabel.change.quart3,
@@ -1668,104 +1529,6 @@ dashboard.plot_quest= function(graph_data){
     Plotly.newPlot(graph_data.DOM_id.change, data_nb_change_avg, layout, {displaylogo: false}, {showLink: false});
 
 
-/**** Données non valides
-
-    //****************** Plot temps réponse *********************
-
-    var data_deltaT_avg=[];
-    temp_data=graph_data.yData.avg_time;
-
-    temp_data_to_plot={
-
-        y:graph_data.yData.data_frame_time.max_time,
-        name:graph_data.yLabel.deltaT.max,
-        type:'bar'
-    };
-
-
-    temp_data_median={
-
-        y:graph_data.yData.data_frame_time.median_time,
-        name:graph_data.yLabel.deltaT.median,
-        type:'bar'
-    };
-
-
-    temp_data_quart1={
-
-        y:graph_data.yData.data_frame_time.quartile1_time,
-        name:graph_data.yLabel.deltaT.quart1,
-        type:'bar'
-    };
-
-
-    temp_data_quart3={
-
-        y:graph_data.yData.data_frame_time.quartile3_time,
-        name:graph_data.yLabel.deltaT.quart3,
-        type:'bar'
-    };
-
-
-    data_deltaT_avg.push(temp_data_quart1);
-    data_deltaT_avg.push(temp_data_median);
-    data_deltaT_avg.push(temp_data_quart3);
-    data_deltaT_avg.push(temp_data_to_plot);
-
-
-    mean_label =graph_data.yLabel.deltaT.mean_line;
-    mean_value=dashboard.calc_avg(temp_data);
-    std_value=dashboard.calc_unbiaised_stdev(temp_data);
-
-    mean_line={
-        name:mean_label,
-        type:'lines',
-        x:[0,temp_data.length-1],
-        y:[mean_value,mean_value],	// moyenne
-        marker: {         // marker is an object, valid marker keys: #scatter-marker
-            color: 'rgb(255,140,0)'
-        }
-    };
-    data_deltaT_avg.push(mean_line);	// add to plotly
-
-    stdev_upper_line={
-        name:mean_label + ' +' + graph_data.yStdev_label,
-        type:'lines',
-        x:[0,graph_data.yData.avg_nb_change.length-1],
-        y:[mean_value+std_value, mean_value+std_value ],	// moyenne - écart type corrigée
-        marker: {         // marker is an object, valid marker keys: #scatter-marker
-            color: 'rgb(51,255,51)'
-        }
-    };
-    data_deltaT_avg.push(stdev_upper_line);	//add to plotly
-
-    stdev_lower_line={
-        name:mean_label + ' -' + graph_data.yStdev_label,
-        type:'lines',
-        x:[0,graph_data.yData.avg_nb_change.length-1],
-        y:[mean_value-std_value, mean_value-std_value ],	// moyenne - écart type corrigée
-        marker: {         // marker is an object, valid marker keys: #scatter-marker
-            color: 'rgb(255,51,51)'
-        }
-    };
-    data_deltaT_avg.push(stdev_lower_line);
-
-    // Layout
-    layout = {
-        barmode:'group',
-        title: graph_data.yLabel.deltaT.title,
-        showlegend: true,
-        yaxis: {title:graph_data.yLabel.deltaT.yaxis},	// setting manual range of axes
-        xaxis: {title:graph_data.yLabel.deltaT.xaxis}	// setting manual range of axes
-
-    };
-
-    Plotly.newPlot(graph_data.DOM_id.deltaT, data_deltaT_avg, layout, {displaylogo: false}, {showLink: false});
-
-
-*/
-
-
 };//end function plot
 
 
@@ -1774,8 +1537,7 @@ dashboard.plot_mean_nb_change= function(graph_data){
 //****************** PLOT nb changement *********************
 
     var data_nb_change_avg=[];
-    // temp_data=graph_data.yData.avg_nb_change;
-    // temp_data=graph_data.yData.data_frame_nb_change.avg_change;
+
     dataY=graph_data.yData.data_frame_nb_change.avg_change.sort();
     dataY.reverse();
 
@@ -1946,30 +1708,6 @@ dashboard.calc_unbiaised_stdev= function(tab){	//= sqrt( (1/n-1)  * (sum(x_i^2) 
     return Math.sqrt((unbiaised_Var));
 };
 
-dashboard.sort_by_key = function(graph_data, key){// construit le data frame pour effectuer des tris par clé
-
-
-};
-
-dashboard.getMedian=function(arrOfNums) {
-    var result =0;
-    var sortedArr = arrOfNums.sort(function(num1, num2) {
-        return num1 - num2;
-    });
-
-    var medianIndex = Math.floor(sortedArr.length / 2);
-    if (arrOfNums.length % 2 === 0) {
-        result=(sortedArr[medianIndex-1] + sortedArr[medianIndex]) / 2;
-        return result;
-    } else {
-        result=(sortedArr[medianIndex]);
-        return result;
-    }
-};
-
-dashboard.sortNumber=function(a,b) {
-    return a - b;
-}
 
 dashboard.quantile=function(array, percentile) {
     array.sort(dashboard.sortNumber);

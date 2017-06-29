@@ -1445,6 +1445,7 @@ dashboard.plot_quest= function(graph_data){
     temp_data=graph_data.yData.avg_nb_change;
 
     temp_data_to_plot={
+    	// x:graph_data.xData,
         y:graph_data.yData.data_frame_nb_change.max_change,
         name:graph_data.yLabel.change.max,
         type:'bar'
@@ -1452,6 +1453,7 @@ dashboard.plot_quest= function(graph_data){
 
 
     temp_data_median={
+    	// x:graph_data.xData,
 
         y:graph_data.yData.data_frame_nb_change.median_change,
         name:graph_data.yLabel.change.median,
@@ -1460,6 +1462,7 @@ dashboard.plot_quest= function(graph_data){
 
 
     temp_data_quart1={
+    	// x:graph_data.xData,
 
         y:graph_data.yData.data_frame_nb_change.quartile1_change,
         name:graph_data.yLabel.change.quart1,
@@ -1708,6 +1711,9 @@ dashboard.calc_unbiaised_stdev= function(tab){	//= sqrt( (1/n-1)  * (sum(x_i^2) 
     return Math.sqrt((unbiaised_Var));
 };
 
+dashboard.sortNumber=function(a,b) {
+    return a - b;
+}
 
 dashboard.quantile=function(array, percentile) {
     array.sort(dashboard.sortNumber);
